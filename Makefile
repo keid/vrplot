@@ -1,11 +1,17 @@
-LDLIBS = -L/usr/X11R6/lib -lglut -lGLU -lGL -lXmu -lXi -lXext -lX11 -lpthread -lm
+LDLIBS = -lpthread -lm -framework OpenGL -framework GLUT 
 TARGETS = glsl1
-OBJECTS = main.o trackball.o glsl.o
+OBJECTS = main.o trackball.o glsl.o VolumeRenderer.o
 
-CXX=/opt/local/bin/g++-mp-4.5
+CXXFLAGS=-Wall -Wextra
+
+CXX=/usr/bin/g++
 
 $(TARGETS): $(OBJECTS)
-	$(CXX) $(CFLAGS) -o $@ $(OBJECTS) $(LDLIBS)
+	$(CXX) $(CFLAGS) -o $@ $^ $(LDLIBS)
+
+.cpp.o:
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
 
 main.o: trackball.h glsl.h
 trackball.o: trackball.h

@@ -1,67 +1,117 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
-#if defined(WIN32)
-//#  pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"")
-#  include "glut.h"
-#  include "glext.h"
-#elif defined(__APPLE__) || defined(MACOSX)
+#include <iostream>
+
+#if defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
 #else
 #  define GL_GLEXT_PROTOTYPES
 #  include <GL/glut.h>
 #endif
 
+
+
 #include "glsl.h"
 
+#include "VolumeRenderer.hpp"
+
 /*
-** ¥·¥§¡¼¥À¥ª¥Ö¥¸¥§¥¯¥È
+** ã‚·ã‚§ãƒ¼ãƒ€ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆ
 */
 static GLuint vertShader;
 static GLuint fragShader;
 static GLuint gl2Program;
 
 /*
-** ¸÷¸»
+** Â¸Ã·Â¸Â»
 */
-static const GLfloat lightpos[] = { 0.0, 0.0, 5.0, 1.0 }; /* °ÌÃÖ¡¡¡¡¡¡ */
-static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* Ä¾ÀÜ¸÷¶¯ÅÙ */
-static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* ´Ä¶­¸÷¶¯ÅÙ */
+static const GLfloat lightpos[] = { 0.0, 0.0, 5.0, 1.0 }; /* Â°ÃŒÃƒÃ–Â¡Â¡Â¡Â¡Â¡Â¡ */
+static const GLfloat lightcol[] = { 1.0, 1.0, 1.0, 1.0 }; /* Ã„Â¾Ã€ÃœÂ¸Ã·Â¶Â¯Ã…Ã™ */
+static const GLfloat lightamb[] = { 0.1, 0.1, 0.1, 1.0 }; /* Â´Ã„Â¶Â­Â¸Ã·Â¶Â¯Ã…Ã™ */
+
+VolumeRenderer *volume_renderer = NULL;
+
+int volume_data_size = 256;
+unsigned int *volume_data = NULL;
+
+static int window_w = 640;
+static int window_h = 480;
+
+static void resize( int w, int h );
 
 /*
-** ½é´ü²½
+** Â½Ã©Â´Ã¼Â²Â½
 */
 static void init(void)
 {
-  /* ¥·¥§¡¼¥À¥×¥í¥°¥é¥à¤Î¥³¥ó¥Ñ¥¤¥ë¡¿¥ê¥ó¥¯·ë²Ì¤òÆÀ¤ëÊÑ¿ô */
+
+  volume_data = new unsigned int[ volume_data_size * volume_data_size * volume_data_size ];
+  for(int z = 0; z < volume_data_size; ++z ) {
+    for(int y = 0; y < volume_data_size; ++y ) {
+      for(int x = 0; x < volume_data_size; ++x ) {
+	int index  = x + y * volume_data_size + z * volume_data_size * volume_data_size;
+	//volume_data[ index ] = static_cast<unsigned int>(x)<<24 + 0xffff<<8;
+	
+	int dist_x = x - volume_data_size / 2;
+	int dist_y = y - volume_data_size / 2;
+	int dist_z = z - volume_data_size / 2;
+	int dist = std::sqrt( dist_x * dist_x + dist_y * dist_y + dist_z * dist_z );
+		
+	unsigned int r = 10;
+	unsigned int g = 10;
+	unsigned int b = 10;
+	unsigned int a = 0;
+
+	if ( z > 50 && z < 100 ) {
+	  b = 255;
+	  a = z - 50;
+	}
+
+	if ( x > 50 && x < 100 ) {
+	  r = 255;
+	  a = y;
+	}
+	
+	if ( y > 50 && y < 100 ) {
+	  g = 255;
+	  a = x/32;
+	}
+	
+	volume_data[ index ] = ((a&0xff)<<24) | ((b&0xff)<<16) | ((g&0xff)<<8) | (r&0xff);
+      }
+    }
+  }
+  
+  /* ã‚·ã‚§ãƒ¼ãƒ€ã®ã‚³ãƒ³ãƒ‘ã‚¤ãƒ«/ãƒªãƒ³ã‚¯çµæœæ ¼ç´å…ˆè­˜åˆ¥å­ */
   GLint compiled, linked;
 
-  /* ½é´üÀßÄê */
-  glClearColor(0.3, 0.3, 1.0, 0.0);
+  /* Initial settings */
+  //glClearColor(0.3, 0.3, 1.0, 0.0);
+  glClearColor(0.0, 0.0, 0.0, 0.0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
+
+  glEnable(GL_CULL_FACE);
+  glClearColor(0.0, 0.0, 0.0, 0);
   
-  /* ¸÷¸»¤Î½é´üÀßÄê */
+  /* Setting light environment */
+  /*
   glEnable(GL_LIGHTING);
   glEnable(GL_LIGHT0);
   glLightfv(GL_LIGHT0, GL_DIFFUSE, lightcol);
   glLightfv(GL_LIGHT0, GL_SPECULAR, lightcol);
   glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
   glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
+  */
 
-  /* GLSL ¤Î½é´ü²½ */
+  /* Initializing GLSL */
   if (glslInit()) exit(1);
 
-  /* ¥·¥§¡¼¥À¥ª¥Ö¥¸¥§¥¯¥È¤ÎºîÀ® */
+  /* Vertex shader configulation */
   vertShader = glCreateShader(GL_VERTEX_SHADER);
-  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-  /* ¥·¥§¡¼¥À¤Î¥½¡¼¥¹¥×¥í¥°¥é¥à¤ÎÆÉ¤ß¹ş¤ß */
-  if (readShaderSource(vertShader, "simple.vert")) exit(1);
-  if (readShaderSource(fragShader, "simple.frag")) exit(1);
-
-  /* ¥Ğ¡¼¥Æ¥Ã¥¯¥¹¥·¥§¡¼¥À¤Î¥½¡¼¥¹¥×¥í¥°¥é¥à¤Î¥³¥ó¥Ñ¥¤¥ë */
+  if (readShaderSource(vertShader, "volume.vert")) exit(1);
   glCompileShader(vertShader);
   glGetShaderiv(vertShader, GL_COMPILE_STATUS, &compiled);
   printShaderInfoLog(vertShader);
@@ -70,7 +120,9 @@ static void init(void)
     exit(1);
   }
 
-  /* ¥Õ¥é¥°¥á¥ó¥È¥·¥§¡¼¥À¤Î¥½¡¼¥¹¥×¥í¥°¥é¥à¤Î¥³¥ó¥Ñ¥¤¥ë */
+  /* Fragment shader configulation */
+  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  if (readShaderSource(fragShader, "volume.frag")) exit(1);
   glCompileShader(fragShader);
   glGetShaderiv(fragShader, GL_COMPILE_STATUS, &compiled);
   printShaderInfoLog(fragShader);
@@ -79,18 +131,15 @@ static void init(void)
     exit(1);
   }
 
-  /* ¥×¥í¥°¥é¥à¥ª¥Ö¥¸¥§¥¯¥È¤ÎºîÀ® */
   gl2Program = glCreateProgram();
 
-  /* ¥·¥§¡¼¥À¥ª¥Ö¥¸¥§¥¯¥È¤Î¥·¥§¡¼¥À¥×¥í¥°¥é¥à¤Ø¤ÎÅĞÏ¿ */
   glAttachShader(gl2Program, vertShader);
   glAttachShader(gl2Program, fragShader);
 
-  /* ¥·¥§¡¼¥À¥ª¥Ö¥¸¥§¥¯¥È¤Îºï½ü */
+  /* Shader objects are not needed after attaching */
   glDeleteShader(vertShader);
   glDeleteShader(fragShader);
 
-  /* ¥·¥§¡¼¥À¥×¥í¥°¥é¥à¤Î¥ê¥ó¥¯ */
   glLinkProgram(gl2Program);
   glGetProgramiv(gl2Program, GL_LINK_STATUS, &linked);
   printProgramInfoLog(gl2Program);
@@ -99,89 +148,74 @@ static void init(void)
     exit(1);
   }
 
-  /* ¥·¥§¡¼¥À¥×¥í¥°¥é¥à¤ÎÅ¬ÍÑ */
+  /* Enable shader program */
   glUseProgram(gl2Program);
+
+  volume_renderer = new VolumeRenderer( window_w, window_h);
+  volume_renderer->loadShaderSource( "simple.vert", "simple.frag" );
 }
-
-/*
-** ¥·¡¼¥ó¤ÎÉÁ²è
-*/
-static void scene(void)
-{
-  static const GLfloat diffuse[] = { 0.6, 0.1, 0.1, 1.0 };
-  static const GLfloat specular[] = { 0.3, 0.3, 0.3, 1.0 };
-  
-  /* ºà¼Á¤ÎÀßÄê */
-  glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, diffuse);
-  glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-  glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 100.0f);
-
-#if 1
-  /* £±Ëç¤Î£´³Ñ·Á¤òÉÁ¤¯ */
-  glNormal3d(0.0, 0.0, 1.0);
-  glBegin(GL_QUADS);
-  glVertex3d(-1.0, -1.0,  0.0);
-  glVertex3d( 1.0, -1.0,  0.0);
-  glVertex3d( 1.0,  1.0,  0.0);
-  glVertex3d(-1.0,  1.0,  0.0);
-  glEnd();
-#else
-  glutSolidTeapot(1.0);
-#endif
-}
-
 
 /****************************
- ** GLUT ¤Î¥³¡¼¥ë¥Ğ¥Ã¥¯´Ø¿ô **
+ ** GLUT Â¤ÃÂ¥Â³Â¡Â¼Â¥Ã«Â¥ÃÂ¥ÃƒÂ¥Â¯Â´Ã˜Â¿Ã´ **
  ****************************/
 
-/* ¥È¥é¥Ã¥¯¥Ü¡¼¥ë½èÍıÍÑ´Ø¿ô¤ÎÀë¸À */
+/* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Â½Ã¨ÃÃ½ÃÃ‘Â´Ã˜Â¿Ã´Â¤ÃÃ€Ã«Â¸Ã€ */
 #include "trackball.h"
 
 static void display(void)
 {
-  /* ¥â¥Ç¥ë¥Ó¥å¡¼ÊÑ´¹¹ÔÎó¤Î½é´ü²½ */
+
+  resize( window_w, window_h );
+  /* Â¥Ã¢Â¥Ã‡Â¥Ã«Â¥Ã“Â¥Ã¥Â¡Â¼ÃŠÃ‘Â´Â¹Â¹Ã”ÃÃ³Â¤ÃÂ½Ã©Â´Ã¼Â²Â½ */
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
-  /* ²èÌÌ¥¯¥ê¥¢ */
+  /* Â²Ã¨ÃŒÃŒÂ¥Â¯Â¥ÃªÂ¥Â¢ */
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
-  /* ¸÷¸»¤Î°ÌÃÖ¤òÀßÄê */
+  /* Â¸Ã·Â¸Â»Â¤ÃÂ°ÃŒÃƒÃ–Â¤Ã²Ã€ÃŸÃ„Ãª */
   glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
   
-  /* »ëÅÀ¤Î°ÜÆ°¡ÊÊªÂÎ¤ÎÊı¤ò±ü¤Ë°ÜÆ°¡Ë*/
+  /* Â»Ã«Ã…Ã€Â¤ÃÂ°ÃœÃ†Â°Â¡ÃŠÃŠÂªÃ‚ÃÂ¤ÃÃŠÃ½Â¤Ã²Â±Ã¼Â¤Ã‹Â°ÃœÃ†Â°Â¡Ã‹*/
+  //glTranslated(0.5, 0.5, -3.0);
   glTranslated(0.0, 0.0, -3.0);
   
-  /* ¥È¥é¥Ã¥¯¥Ü¡¼¥ë½èÍı¤Ë¤è¤ë²óÅ¾ */
+  /* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Â½Ã¨ÃÃ½Â¤Ã‹Â¤Ã¨Â¤Ã«Â²Ã³Ã…Â¾ */
   glMultMatrixd(trackballRotation());
   
-  /* ¥·¡¼¥ó¤ÎÉÁ²è */
-  scene();
+  volume_renderer->loadVolumeData
+    ( volume_data_size,
+      volume_data_size,
+      volume_data_size,
+      volume_data );
   
-  /* ¥À¥Ö¥ë¥Ğ¥Ã¥Õ¥¡¥ê¥ó¥° */
+  volume_renderer->drawVolume( window_w, window_h );
+  
+  /* Â¥Ã€Â¥Ã–Â¥Ã«Â¥ÃÂ¥ÃƒÂ¥Ã•Â¥Â¡Â¥ÃªÂ¥Ã³Â¥Â° */
   glutSwapBuffers();
 }
 
 static void resize(int w, int h)
 {
-  /* ¥È¥é¥Ã¥¯¥Ü¡¼¥ë¤¹¤ëÈÏ°Ï */
-  trackballRegion(w, h);
+  glutReshapeWindow( window_w, window_h );
   
-  /* ¥¦¥£¥ó¥É¥¦Á´ÂÎ¤ò¥Ó¥å¡¼¥İ¡¼¥È¤Ë¤¹¤ë */
-  glViewport(0, 0, w, h);
+  /* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Â¤Â¹Â¤Ã«ÃˆÃÂ°Ã */
+  trackballRegion(window_w, window_h);
   
-  /* Æ©»ëÊÑ´¹¹ÔÎó¤Î»ØÄê */
+  /* Â¥Â¦Â¥Â£Â¥Ã³Â¥Ã‰Â¥Â¦ÃÂ´Ã‚ÃÂ¤Ã²Â¥Ã“Â¥Ã¥Â¡Â¼Â¥ÃÂ¡Â¼Â¥ÃˆÂ¤Ã‹Â¤Â¹Â¤Ã« */
+  glViewport(0, 0, window_w, window_h);
+  
+  /* Ã†Â©Â»Ã«ÃŠÃ‘Â´Â¹Â¹Ã”ÃÃ³Â¤ÃÂ»Ã˜Ã„Ãª */
   glMatrixMode(GL_PROJECTION);
   
-  /* Æ©»ëÊÑ´¹¹ÔÎó¤Î½é´ü²½ */
+  /* Ã†Â©Â»Ã«ÃŠÃ‘Â´Â¹Â¹Ã”ÃÃ³Â¤ÃÂ½Ã©Â´Ã¼Â²Â½ */
   glLoadIdentity();
-  gluPerspective(60.0, (double)w / (double)h, 1.0, 100.0);
+  gluPerspective(60.0, (double)w / (double)h, 1.00, 100.0);
 }
 
 static void idle(void)
 {
-  /* ²èÌÌ¤ÎÉÁ¤­ÂØ¤¨ */
+  /* Â²Ã¨ÃŒÃŒÂ¤ÃÃ‰ÃÂ¤Â­Ã‚Ã˜Â¤Â¨ */
   glutPostRedisplay();
 }
 
@@ -191,11 +225,11 @@ static void mouse(int button, int state, int x, int y)
   case GLUT_LEFT_BUTTON:
     switch (state) {
     case GLUT_DOWN:
-      /* ¥È¥é¥Ã¥¯¥Ü¡¼¥ë³«»Ï */
+      /* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Â³Â«Â»Ã */
       trackballStart(x, y);
       break;
     case GLUT_UP:
-      /* ¥È¥é¥Ã¥¯¥Ü¡¼¥ëÄä»ß */
+      /* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Ã„Ã¤Â»ÃŸ */
       trackballStop(x, y);
       break;
     default:
@@ -209,7 +243,7 @@ static void mouse(int button, int state, int x, int y)
 
 static void motion(int x, int y)
 {
-  /* ¥È¥é¥Ã¥¯¥Ü¡¼¥ë°ÜÆ° */
+  /* Â¥ÃˆÂ¥Ã©Â¥ÃƒÂ¥Â¯Â¥ÃœÂ¡Â¼Â¥Ã«Â°ÃœÃ†Â° */
   trackballMotion(x, y);
 }
 
@@ -219,7 +253,7 @@ static void keyboard(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
   case '\033':
-    /* ESC ¤« q ¤« Q ¤ò¥¿¥¤¥×¤·¤¿¤é½ªÎ» */
+    /* ESC Â¤Â« q Â¤Â« Q Â¤Ã²Â¥Â¿Â¥Â¤Â¥Ã—Â¤Â·Â¤Â¿Â¤Ã©Â½ÂªÃÂ» */
     exit(0);
   default:
     break;
@@ -227,11 +261,12 @@ static void keyboard(unsigned char key, int x, int y)
 }
 
 /*
-** ¥á¥¤¥ó¥×¥í¥°¥é¥à
+** Â¥Ã¡Â¥Â¤Â¥Ã³Â¥Ã—Â¥Ã­Â¥Â°Â¥Ã©Â¥Ã 
 */
 int main(int argc, char *argv[])
 {
   glutInit(&argc, argv);
+  glutInitWindowSize( window_w, window_h );
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
   glutCreateWindow(argv[0]);
   glutDisplayFunc(display);

@@ -1,5 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
+#include <iostream>
+#include <string>
+#include <fstream>
 
 #if defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
@@ -20,49 +22,28 @@ int glslInit(void)
   return error;
 }
 
-/*
-** シェーダーのソースプログラムをメモリに読み込む
-*/
 int readShaderSource(GLuint shader, const char *file)
 {
-  FILE *fp;
-  const GLchar *source;
-  GLsizei length;
-  int ret;
-  
-  /* ファイルを開く */
-  fp = fopen(file, "rb");
-  if (fp == NULL) {
-    perror(file);
+
+  std::ifstream ifs( file );
+  if ( !ifs.good() ) {
+    std::cerr << "File " << file << " open error." << std::endl;
     return -1;
   }
   
-  /* ファイルの末尾に移動し現在位置（つまりファイルサイズ）を得る */
-  fseek(fp, 0L, SEEK_END);
-  length = ftell(fp);
-  
-  /* ファイルサイズのメモリを確保 */
-  source = (GLchar *)malloc(length);
-  if (source == NULL) {
-    fprintf(stderr, "Could not allocate read buffer.\n");
-    return -1;
+  std::string source;
+  while( !ifs.eof() ) {
+      std::string buf;
+    std::getline( ifs, buf );
+    source += buf + std::string("\n");
   }
+
+  const GLchar *p_str = static_cast<const GLchar*>(source.c_str());
+  const GLint p_length = source.size();
+
+  glShaderSource( shader, 1, &p_str, &p_length);
   
-  /* ファイルを先頭から読み込む */
-  fseek(fp, 0L, SEEK_SET);
-  ret = fread((void *)source, 1, length, fp) != (size_t)length;
-  fclose(fp);
-  
-  /* シェーダのソースプログラムのシェーダオブジェクトへの読み込み */
-  if (ret)
-    fprintf(stderr, "Could not read file: %s.\n", file);
-  else
-    glShaderSource(shader, 1, &source, &length);
-  
-  /* 確保したメモリの開放 */
-  free((void *)source);
-  
-  return ret;
+  return 0;
 }
 
 /*
@@ -76,17 +57,18 @@ void printShaderInfoLog(GLuint shader)
   
   if (bufSize > 1) {
     GLchar *infoLog;
-    
+
     infoLog = (GLchar *)malloc(bufSize);
     if (infoLog != NULL) {
       GLsizei length;
       
       glGetShaderInfoLog(shader, bufSize, &length, infoLog);
-      fprintf(stderr, "InfoLog:\n%s\n\n", infoLog);
+      std::cerr << "InfoLog:" << std::endl;
+      std::cerr << std::string(infoLog) << std::endl;
       free(infoLog);
     }
     else
-      fprintf(stderr, "Could not allocate InfoLog buffer.\n");
+      std::cerr << "Could not allocate InfoLog buffer." << std::endl;
   }
 }
 
