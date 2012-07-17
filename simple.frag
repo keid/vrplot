@@ -27,7 +27,7 @@ void main (void)
 
   vec4 color_volume;
 
-  int IT_MAX = 256;
+  int IT_MAX = 128;
   float step = ( 1.0 / float(IT_MAX) );
 
   //for ( int i=0; i<IT_MAX; ++i ) {

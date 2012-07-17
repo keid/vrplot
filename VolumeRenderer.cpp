@@ -3,7 +3,6 @@
 #include <fstream>
 #include <stdexcept>
 
-
 VolumeRenderer::VolumeRenderer( int w, int h) {
   init(w, h);
   shader_program_ = glCreateProgram();
@@ -48,8 +47,9 @@ void VolumeRenderer::init(GLint w, GLint h) {
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
   
 
   glGenFramebuffersEXT(1, &frame_buffer_);
@@ -359,14 +359,14 @@ std::string VolumeRenderer::getShaderInfo( GLuint shader ) {
   if (bufSize > 1) {
     GLchar *infoLog;
 
-    infoLog = (GLchar *)malloc(bufSize);
+    infoLog = new GLchar[bufSize];
 
     GLsizei length;
     glGetShaderInfoLog(shader, bufSize, &length, infoLog);
 
     result = std::string( infoLog );
 
-    free( infoLog );
+    delete [] infoLog;
   }
   
   return result;

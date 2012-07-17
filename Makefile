@@ -1,21 +1,38 @@
-LDLIBS = -lpthread -lm -framework OpenGL -framework GLUT 
-TARGETS = glsl1
-OBJECTS = main.o trackball.o glsl.o VolumeRenderer.o
+TARGET = volumerenderer
 
-CXXFLAGS=-Wall -Wextra
+SRC=main.cpp trackball.cpp VolumeRenderer.cpp Controller.cpp
 
-CXX=/usr/bin/g++
+OBJS=$(patsubst %.cpp,%.o,$(SRC))
+DEPENDS=$(patsubst %.cpp,%.d,$(SRC))
 
-$(TARGETS): $(OBJECTS)
-	$(CXX) $(CFLAGS) -o $@ $^ $(LDLIBS)
+PACKAGES=gl glu libedit
+
+CXXFLAGS=-Wall -Wextra -O3
+CXXFLAGS+=$(shell pkg-config --cflags ${PACKAGES} )
+
+LIBS = -lpthread -lm -lglut
+LIBS+=$(shell pkg-config --libs ${PACKAGES} )
+
+CXX=g++
+
+.PHONY: all clean distclean
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $@ $^ $(LIBS)
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-
-main.o: trackball.h glsl.h
-trackball.o: trackball.h
-glsl.o: glsl.h
+%.d: %.cpp
+	@set -e; $(CXX) -MM $(CXXFLAGS) $< \
+	| sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' > $@; \
+	[ -s $@ ] || rm -f $@
+-include $(DEPENDS)
 
 clean:
-	-rm -f $(TARGETS) *.o *~
+	rm -f *.o *~ $(DEPENDS)
+
+distclean: clean
+	rm -rf $(TARGET)
