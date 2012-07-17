@@ -10,6 +10,8 @@
 #  include <GL/glut.h>
 #endif
 
+namespace vrplot {
+
 class VolumeRenderer {
 
 public:
@@ -18,7 +20,7 @@ public:
   void loadShaderSource( const std::string &v_shader_path,
 			 const std::string &f_shader_path );
 
-  void loadVolumeData( int x, int y, int z, const unsigned int *data );
+  void loadVolumeData( int x, int y, int z, const void *data );
 
   void drawVolume( int w, int h);
 
@@ -54,5 +56,7 @@ private:
   std::string getShaderInfo( GLuint shader );
   
 };
+
+}
 
 #endif

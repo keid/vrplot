@@ -13,10 +13,16 @@
 
 #include "trackball.h"
 
+#include "config.hpp"
 #include "VolumeRenderer.hpp"
 #include "Controller.hpp"
+#include "FileLoader.hpp"
+#include "SimpleVolumeGenerator.hpp"
 
-VolumeRenderer *volume_renderer = NULL;
+vrplot::VolumeRenderer *volume_renderer = NULL;
+vrplot::Controller *controller = NULL;
+vrplot::FileLoader *fileloader = NULL;
+vrplot::volumeGenerator::IVolumeGenerator *volume_gen = NULL;
 
 int volume_data_size = 256;
 unsigned int *volume_data = NULL;
@@ -26,8 +32,16 @@ static int window_h = 480;
 
 static void resize( int w, int h );
 
+static void finish( void ) {
+  delete volume_renderer;
+  delete controller;
+}
+
 static void init(void)
 {
+
+  /////////////
+  /* Test code */
 
   volume_data = new unsigned int[ volume_data_size * volume_data_size * volume_data_size ];
   for(int z = 0; z < volume_data_size; ++z ) {
@@ -77,12 +91,31 @@ static void init(void)
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
-
-  glEnable(GL_CULL_FACE);
-  glClearColor(0.0, 0.0, 0.0, 0);
   
-  volume_renderer = new VolumeRenderer( window_w, window_h);
+  volume_renderer = new vrplot::VolumeRenderer( window_w, window_h);
   volume_renderer->loadShaderSource( "simple.vert", "simple.frag" );
+
+  controller = new vrplot::Controller();
+  controller->invoke();
+
+  fileloader = new vrplot::FileLoader("test.dat");
+
+  std::vector< int > index;
+  index.push_back(0);
+  index.push_back(1);
+  index.push_back(2);
+  index.push_back(3);
+  index.push_back(4);
+  index.push_back(5);
+  index.push_back(6);
+  
+
+  volume_gen = new vrplot::volumeGenerator::SimpleVolumeGenerator( 256, 256, 256 );
+  volume_gen->generate( *fileloader, index );
+
+  volume_renderer->loadVolumeData( 256, 256, 256, volume_gen->volume() );
+
+  atexit( finish );
 }
 
 static void display(void)
@@ -96,14 +129,16 @@ static void display(void)
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   
   glTranslated(-0.5, -0.5, -3.0);
-  
+
   glMultMatrixd(trackballRotation());
   
+  /*
   volume_renderer->loadVolumeData
     ( volume_data_size,
       volume_data_size,
       volume_data_size,
       volume_data );
+  */
   
   volume_renderer->drawVolume( window_w, window_h );
   
@@ -126,7 +161,13 @@ static void resize(int w, int h)
 
 static void idle(void)
 {
-  glutPostRedisplay();
+  if ( controller == NULL ) {
+    exit( EXIT_FAILURE );
+  } else if ( controller->isFinished() ) {
+    exit( EXIT_SUCCESS );
+  } else {
+    glutPostRedisplay();
+  }
 }
 
 static void mouse(int button, int state, int x, int y)
@@ -160,7 +201,7 @@ static void keyboard(unsigned char key, int x, int y)
   case 'q':
   case 'Q':
   case '\033':
-    exit(0);
+    exit( EXIT_SUCCESS );
   default:
     break;
   }
@@ -168,22 +209,23 @@ static void keyboard(unsigned char key, int x, int y)
 
 int main(int argc, char *argv[])
 {
-  
-  vrplot::Controller cont;
 
-  cont.invoke();
-  
   glutInit(&argc, argv);
   glutInitWindowSize( window_w, window_h );
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-  glutCreateWindow("VolumeRenderer Demo");
+
+  glutCreateWindow( vrplot::PROG_NAME.c_str() );
+  
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
   glutIdleFunc(idle);
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
+  
   init();
+  
   glutMainLoop();
+  
   return 0;
 }

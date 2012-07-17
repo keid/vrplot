@@ -6,6 +6,7 @@
 
 #include <histedit.h>
 
+#include <pthread.h>
 
 namespace vrplot {
 
@@ -15,6 +16,8 @@ public:
   Controller();
 
   void invoke();
+
+  bool isFinished();
   
   ~Controller();
   
@@ -24,13 +27,20 @@ private:
   History *hist_;
   HistEvent *ev_;
 
+  bool is_finished_;
+
+  pthread_t thread_;
+
   static const std::string PROMPT_MSG;
 
   void initialize();
 
   bool execCommand( const std::vector< std::string > &cmd );
-
   static const char *prompt(EditLine *el);
+
+  void pollCommand();
+
+  static void* launchThread(void *obj);
   
 };
 

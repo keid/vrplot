@@ -1,6 +1,9 @@
 TARGET = volumerenderer
 
-SRC=main.cpp trackball.cpp VolumeRenderer.cpp Controller.cpp
+SRC=main.cpp trackball.cpp \
+VolumeRenderer.cpp Controller.cpp \
+FileLoader.cpp \
+SimpleVolumeGenerator.cpp
 
 OBJS=$(patsubst %.cpp,%.o,$(SRC))
 DEPENDS=$(patsubst %.cpp,%.d,$(SRC))

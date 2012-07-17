@@ -3,6 +3,8 @@
 #include <fstream>
 #include <stdexcept>
 
+namespace vrplot {
+
 VolumeRenderer::VolumeRenderer( int w, int h) {
   init(w, h);
   shader_program_ = glCreateProgram();
@@ -26,7 +28,7 @@ void VolumeRenderer::drawVolume( int w, int h) {
   //renderBufferToScreen( backface_buffer_, w, h );
 }
 
-void VolumeRenderer::loadVolumeData( int x, int y, int z, const unsigned int *data ) {
+void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
   glBindTexture( GL_TEXTURE_3D, tex_volume_ );
   glTexImage3D( GL_TEXTURE_3D,
 	       0,
@@ -373,6 +375,8 @@ std::string VolumeRenderer::getShaderInfo( GLuint shader ) {
 }
 
 VolumeRenderer::~VolumeRenderer() {
+
+}
 
 }
 
