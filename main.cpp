@@ -18,75 +18,27 @@
 #include "Controller.hpp"
 #include "FileLoader.hpp"
 #include "SimpleVolumeGenerator.hpp"
+#include "volumeGenerator/Demo0.hpp"
 
 vrplot::VolumeRenderer *volume_renderer = NULL;
 vrplot::Controller *controller = NULL;
-vrplot::FileLoader *fileloader = NULL;
+vrplot::FileLoader *file_loader = NULL;
 vrplot::volumeGenerator::IVolumeGenerator *volume_gen = NULL;
-
-int volume_data_size = 256;
-unsigned int *volume_data = NULL;
 
 static int window_w = 640;
 static int window_h = 480;
 
 static void resize( int w, int h );
 
-static void finish( void ) {
+static void cleanup( void ) {
   delete volume_renderer;
   delete controller;
+  delete file_loader;
+  delete volume_gen;
 }
 
 static void init(void)
 {
-
-  /////////////
-  /* Test code */
-
-  volume_data = new unsigned int[ volume_data_size * volume_data_size * volume_data_size ];
-  for(int z = 0; z < volume_data_size; ++z ) {
-    for(int y = 0; y < volume_data_size; ++y ) {
-      for(int x = 0; x < volume_data_size; ++x ) {
-	int index  = x + y * volume_data_size + z * volume_data_size * volume_data_size;
-
-	float dist = std::sqrt( (x-volume_data_size/2)*(x-volume_data_size/2)
-				+ (y-volume_data_size/2)*(y-volume_data_size/2)
-				+ (z-volume_data_size/2)*(z-volume_data_size/2) );
-	unsigned int r = 0;
-	unsigned int g = 0;
-	unsigned int b = 0;
-	unsigned int a = 0;
-
-	float wave = sin( dist * 0.1 );
-	
-	if( wave > 0 ) {
-	  r = 255 * std::abs(wave);
-	  b = 0;
-	} else {
-	  r = 0;
-	  b = 255 * std::abs(wave);
-	}
-
-	if ( (x == volume_data_size/2) || ( y == volume_data_size/2 ) ) {
-	  a = std::max(r, b) / (dist / 50);
-	}
-	
-	if ( dist < volume_data_size / 2 ) {
-	  a = std::max(r, b) / (dist / 5);
-	} else {
-	  a = 0;
-	}
-
-	if ( x > volume_data_size /2 && y > volume_data_size /2  ) {
-	  a = 0;
-	}
-	
-	volume_data[ index ] = ((a&0xff)<<24) | ((b&0xff)<<16) | ((g&0xff)<<8) | (r&0xff);
-      }
-    }
-  }
-
-  /////////////
 
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glEnable(GL_DEPTH_TEST);
@@ -95,7 +47,8 @@ static void init(void)
   volume_renderer = new vrplot::VolumeRenderer( window_w, window_h);
   volume_renderer->loadShaderSource( "simple.vert", "simple.frag" );
 
-  fileloader = new vrplot::FileLoader("test.dat");
+  //file_loader = new vrplot::FileLoader("test.dat");
+  file_loader = new vrplot::FileLoader();
 
   controller = new vrplot::Controller();
   controller->invoke();
@@ -109,13 +62,13 @@ static void init(void)
   index.push_back(5);
   index.push_back(6);
   
-
-  volume_gen = new vrplot::volumeGenerator::SimpleVolumeGenerator( 256, 256, 256 );
-  volume_gen->generate( *fileloader, index );
+  //volume_gen = new vrplot::volumeGenerator::SimpleVolumeGenerator( 256, 256, 256 );
+  volume_gen = new vrplot::volumeGenerator::Demo0( 256, 256, 256 );
+  volume_gen->generate( *file_loader, index );
 
   volume_renderer->loadVolumeData( 256, 256, 256, volume_gen->volume() );
 
-  atexit( finish );
+  atexit( cleanup );
 }
 
 static void display(void)
@@ -131,14 +84,6 @@ static void display(void)
   glTranslated(-0.5, -0.5, -3.0);
 
   glMultMatrixd(trackballRotation());
-  
-  /*
-  volume_renderer->loadVolumeData
-    ( volume_data_size,
-      volume_data_size,
-      volume_data_size,
-      volume_data );
-  */
   
   volume_renderer->drawVolume( window_w, window_h );
   
