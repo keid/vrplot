@@ -5,6 +5,9 @@
 #include <list>
 
 namespace vrplot {
+
+class Components;
+
 namespace controller {
 namespace command {
 
@@ -20,7 +23,8 @@ public:
    * Execute a command using args. Return true if the command is
    * finished successfully, or return false if failed.
    */
-  virtual bool execute( std::list< std::string >& args ) const = 0;
+  virtual bool execute( std::list< std::string >& args,
+			Components* components) const = 0;
   
   /*
    * Return a message which describes a usage of a command. The

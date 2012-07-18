@@ -10,7 +10,8 @@ namespace command {
 class CommandPlot : public ICommand {
 public:
   std::string getName() const ;
-  bool execute( std::list< std::string >& args ) const;
+  bool execute( std::list< std::string >& args,
+		Components* components ) const;
   std::string getUsage() const ;
 };
 

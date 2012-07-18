@@ -11,12 +11,15 @@
 #include "commands/ICommand.hpp"
 
 namespace vrplot {
+
+class Components;
+
 namespace controller {
 
 class Controller {
 public:
 
-  Controller();
+  Controller( Components* components );
 
   void invoke();
   
@@ -34,8 +37,10 @@ private:
   
   bool is_finished_;
   pthread_t thread_;
-  
+   
   std::map< std::string, command::ICommand* > command_table_;
+
+  Components *components_;
 
   void initialize();
 

@@ -11,6 +11,8 @@
 #include "commands/ICommand.hpp"
 #include "commands/CommandPlot.hpp"
 
+#include "Components.hpp"
+
 namespace vrplot {
 namespace controller {
 
@@ -23,7 +25,7 @@ void Controller::initializeCommand() {
   
 }
 
-Controller::Controller() {
+Controller::Controller( Components* components ) : components_(components){
   initialize();
 }
 
@@ -41,7 +43,7 @@ bool Controller::execCommand( std::list< std::string > &cmd ) {
   std::map< std::string, command::ICommand*  >::const_iterator it;
   if ( ( it = command_table_.find( command_name ) ) != command_table_.end() ) {
     const command::ICommand *command = (*it).second;
-    command->execute( cmd );
+    command->execute( cmd, components_ );
   } else {
     printf("Unknown command: %s\n", command_name.c_str());
   }

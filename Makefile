@@ -5,8 +5,9 @@ VolumeRenderer.cpp \
 Controller.cpp \
 commands/CommandPlot.cpp \
 FileLoader.cpp \
-SimpleVolumeGenerator.cpp \
-volumeGenerator/Demo0.cpp
+Components.cpp \
+volumeGenerator/SimpleVolumeGenerator.cpp \
+volumeGenerator/Demo0.cpp 
 
 OBJS=$(patsubst %.cpp,%.o,$(SRC))
 DEPENDS=$(patsubst %.cpp,%.d,$(SRC))
