@@ -4,28 +4,48 @@
 
 #include <histedit.h>
 #include <cstdio>
-#include <vector>
+#include <list>
 #include <string>
+#include <utility>
+
+#include "commands/ICommand.hpp"
+#include "commands/CommandPlot.hpp"
 
 namespace vrplot {
+namespace controller {
 
 const std::string Controller::PROMPT_MSG = PROG_NAME+"> ";
+
+/* Add new commands in this function */
+void Controller::initializeCommand() {
+  
+  addCommand<command::CommandPlot>();
+  
+}
 
 Controller::Controller() {
   initialize();
 }
 
-bool Controller::execCommand( const std::vector< std::string > &cmd ) {
+bool Controller::execCommand( std::list< std::string > &cmd ) {
 
   if ( cmd.size() == 0 ) return false;
 
-  const std::string command_name = cmd.at(0);
+  const std::string command_name = cmd.front();
+  cmd.pop_front();
 
-  if( command_name == "exit" ) {
+  if( command_name == "exit" || command_name == "quit" ) {
     return true;
   }
-  
-  printf("Unknown command: %s\n", command_name.c_str());
+
+  std::map< std::string, command::ICommand*  >::const_iterator it;
+  if ( ( it = command_table_.find( command_name ) ) != command_table_.end() ) {
+    const command::ICommand *command = (*it).second;
+    command->execute( cmd );
+  } else {
+    printf("Unknown command: %s\n", command_name.c_str());
+  }
+
   return false;
 }
 
@@ -72,13 +92,15 @@ void Controller::initialize() {
   el_set(el_, EL_HIST, history, hist_);
 
   el_source(el_, NULL);
+
+  initializeCommand();
 }
 
 void Controller::pollCommand() {
   const char* buf;
   int num;
 
-  std::vector < std::string > cmd;
+  std::list < std::string > cmd;
 
   while( (buf = el_gets(el_, &num)) != NULL && (num != 0) ) {
     int ac = 0;
@@ -120,4 +142,5 @@ void* Controller::launchThread(void *obj) {
   return NULL;
 }
 
+}
 }

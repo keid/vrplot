@@ -21,7 +21,7 @@
 #include "volumeGenerator/Demo0.hpp"
 
 vrplot::VolumeRenderer *volume_renderer = NULL;
-vrplot::Controller *controller = NULL;
+vrplot::controller::Controller *controller = NULL;
 vrplot::FileLoader *file_loader = NULL;
 vrplot::volumeGenerator::IVolumeGenerator *volume_gen = NULL;
 
@@ -50,7 +50,7 @@ static void init(void)
   //file_loader = new vrplot::FileLoader("test.dat");
   file_loader = new vrplot::FileLoader();
 
-  controller = new vrplot::Controller();
+  controller = new vrplot::controller::Controller();
   controller->invoke();
   
   std::vector< int > index;

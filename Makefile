@@ -1,7 +1,9 @@
 TARGET = volumerenderer
 
 SRC=main.cpp trackball.cpp \
-VolumeRenderer.cpp Controller.cpp \
+VolumeRenderer.cpp \
+Controller.cpp \
+commands/CommandPlot.cpp \
 FileLoader.cpp \
 SimpleVolumeGenerator.cpp \
 volumeGenerator/Demo0.cpp
