@@ -14,16 +14,19 @@
 #include "trackball.h"
 
 #include "config.hpp"
+
 #include "VolumeRenderer.hpp"
 #include "Controller.hpp"
 #include "FileLoader.hpp"
+
+/*
 #include "SimpleVolumeGenerator.hpp"
 #include "volumeGenerator/Demo0.hpp"
+*/
 
-vrplot::VolumeRenderer *volume_renderer = NULL;
-vrplot::Controller *controller = NULL;
-vrplot::FileLoader *file_loader = NULL;
-vrplot::volumeGenerator::IVolumeGenerator *volume_gen = NULL;
+#include "Components.hpp"
+
+vrplot::Components* components = NULL;
 
 static int window_w = 640;
 static int window_h = 480;
@@ -31,10 +34,7 @@ static int window_h = 480;
 static void resize( int w, int h );
 
 static void cleanup( void ) {
-  delete volume_renderer;
-  delete controller;
-  delete file_loader;
-  delete volume_gen;
+  delete components;
 }
 
 static void init(void)
@@ -44,31 +44,24 @@ static void init(void)
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
-  volume_renderer = new vrplot::VolumeRenderer( window_w, window_h);
-  volume_renderer->loadShaderSource( "simple.vert", "simple.frag" );
-
-  //file_loader = new vrplot::FileLoader("test.dat");
-  file_loader = new vrplot::FileLoader();
-
-  controller = new vrplot::Controller();
-  controller->invoke();
+  components = new vrplot::Components();
   
-  std::vector< int > index;
-  index.push_back(0);
-  index.push_back(1);
-  index.push_back(2);
-  index.push_back(3);
-  index.push_back(4);
-  index.push_back(5);
-  index.push_back(6);
+  components->setRenderer( new vrplot::VolumeRenderer( window_w, window_h), true);
+  components->getRenderer()->loadShaderSource( "simple.vert", "simple.frag" );
+
+  components->setFileLoader( new vrplot::FileLoader(), true);
+  
+  components->setController( new vrplot::controller::Controller( components ), true);
   
   //volume_gen = new vrplot::volumeGenerator::SimpleVolumeGenerator( 256, 256, 256 );
-  volume_gen = new vrplot::volumeGenerator::Demo0( 256, 256, 256 );
-  volume_gen->generate( *file_loader, index );
+  //volume_gen = new vrplot::volumeGenerator::Demo0( 256, 256, 256 );
+  //volume_gen->generate( *file_loader, index );
 
-  volume_renderer->loadVolumeData( 256, 256, 256, volume_gen->volume() );
+  //volume_renderer->loadVolumeData( 256, 256, 256, volume_gen->volume() );
 
   atexit( cleanup );
+
+  components->getController()->invoke();
 }
 
 static void display(void)
@@ -85,7 +78,7 @@ static void display(void)
 
   glMultMatrixd(trackballRotation());
   
-  volume_renderer->drawVolume( window_w, window_h );
+  components->getRenderer()->drawVolume( window_w, window_h );
   
   glutSwapBuffers();
 }
@@ -106,9 +99,9 @@ static void resize(int w, int h)
 
 static void idle(void)
 {
-  if ( controller == NULL ) {
+  if ( components->getController() == NULL ) {
     exit( EXIT_FAILURE );
-  } else if ( controller->isFinished() ) {
+  } else if ( components->getController()->isFinished() ) {
     exit( EXIT_SUCCESS );
   } else {
     glutPostRedisplay();

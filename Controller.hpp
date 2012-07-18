@@ -2,40 +2,72 @@
 #define CONTROLLER_HPP
 
 #include <string>
-#include <vector>
+#include <list>
+#include <map>
 
 #include <histedit.h>
-
 #include <pthread.h>
 
+#include "commands/ICommand.hpp"
+
 namespace vrplot {
+
+class Components;
+
+namespace controller {
 
 class Controller {
 public:
 
-  Controller();
+  Controller( Components* components );
 
   void invoke();
-
+  
   bool isFinished();
   
   ~Controller();
   
 private:
+  static const std::string PROMPT_MSG;
+  
   EditLine *el_;
   Tokenizer *tok_;
   History *hist_;
   HistEvent *ev_;
-
+  
   bool is_finished_;
-
   pthread_t thread_;
+   
+  std::map< std::string, command::ICommand* > command_table_;
 
-  static const std::string PROMPT_MSG;
+  Components *components_;
 
   void initialize();
 
-  bool execCommand( const std::vector< std::string > &cmd );
+  /*
+   * Execute command using command table.
+   */
+  bool execCommand( std::list< std::string > &cmd );
+  
+  /*
+   * Initialize the command table.
+   */
+  void initializeCommand();
+  
+  template< typename Command_Type >
+  bool addCommand( ) {
+    command::ICommand *p;
+    
+    try {
+      p = new Command_Type();
+    } catch ( std::bad_alloc &ex ) {
+      return false;
+    }
+    
+    command_table_.insert( std::make_pair( p->getName(), p ) );
+    return true;
+  }
+  
   static const char *prompt(EditLine *el);
 
   void pollCommand();
@@ -44,6 +76,7 @@ private:
   
 };
 
+}
 }
 
 #endif
