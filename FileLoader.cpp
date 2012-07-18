@@ -25,8 +25,8 @@ bool FileLoader::load( const std::string& path ) {
   max_.clear();
   
   std::string buf;
+  DataType entry;
   while( std::getline( ifs, buf ) ) {
-    DataType entry;
     if ( readLine( buf, entry ) ) {
       data_.push_back ( entry );
       updateRange( entry );
@@ -51,10 +51,14 @@ bool FileLoader::readLine( const std::string& str, DataType &data ) {
     striped_str = str.substr(valid_pos, end_pos - valid_pos);
   }
 
-  std::istringstream iss( striped_str );
+  static std::istringstream iss;
+
+  iss.clear();
+  iss.str("");
+  
+  iss.str( striped_str );
   
   EntryType token;
-
   data.clear();
   while( !iss.eof() ) {
     iss >> token;

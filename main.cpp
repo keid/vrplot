@@ -95,11 +95,11 @@ static void init(void)
   volume_renderer = new vrplot::VolumeRenderer( window_w, window_h);
   volume_renderer->loadShaderSource( "simple.vert", "simple.frag" );
 
-  controller = new vrplot::Controller();
-  controller->invoke();
-
   fileloader = new vrplot::FileLoader("test.dat");
 
+  controller = new vrplot::Controller();
+  controller->invoke();
+  
   std::vector< int > index;
   index.push_back(0);
   index.push_back(1);
