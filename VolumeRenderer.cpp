@@ -8,7 +8,8 @@ namespace vrplot {
 VolumeRenderer::VolumeRenderer( int w, int h) {
   init(w, h);
   shader_program_ = glCreateProgram();
-  
+
+  pthread_mutex_init(&mutex_volume_,NULL);
 }
 
 void VolumeRenderer::drawVolume( int w, int h) {
@@ -19,8 +20,11 @@ void VolumeRenderer::drawVolume( int w, int h) {
   enableRenderBuffers();
   
   renderBackface();
-  renderVolume();
 
+  pthread_mutex_lock( &mutex_volume_ );
+  renderVolume();
+  pthread_mutex_unlock( &mutex_volume_ );
+  
   disableRenderBuffers();
   
   // TODO : pass windows size
@@ -29,6 +33,8 @@ void VolumeRenderer::drawVolume( int w, int h) {
 }
 
 void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
+  pthread_mutex_lock( &mutex_volume_ );
+  
   glBindTexture( GL_TEXTURE_3D, tex_volume_ );
   glTexImage3D( GL_TEXTURE_3D,
 	       0,
@@ -40,7 +46,8 @@ void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
 	       GL_RGBA,
 	       GL_UNSIGNED_BYTE,
 	       data);
-
+  
+  pthread_mutex_unlock( &mutex_volume_ );
 }
 
 void VolumeRenderer::init(GLint w, GLint h) {

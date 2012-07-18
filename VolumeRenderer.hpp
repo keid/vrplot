@@ -2,6 +2,7 @@
 #define VOLUMERENDERER_HPP
 
 #include <string>
+#include <pthread.h>
 
 #if defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
@@ -36,6 +37,8 @@ private:
   GLuint final_image_buffer_;
 
   GLuint shader_program_;
+
+  pthread_mutex_t mutex_volume_;
 
   void init(GLint w, GLint h);
   
