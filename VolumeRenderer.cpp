@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include <cstring>
+#include <cstdlib>
 
 namespace vrplot {
 
@@ -10,9 +12,12 @@ VolumeRenderer::VolumeRenderer( int w, int h) {
   shader_program_ = glCreateProgram();
 
   pthread_mutex_init(&mutex_volume_,NULL);
+
 }
 
 void VolumeRenderer::drawVolume( int w, int h) {
+  updateVolumeImage();
+  
   glUseProgram(0);
   
   //glutSolidCube(1.0); return;
@@ -20,10 +25,7 @@ void VolumeRenderer::drawVolume( int w, int h) {
   enableRenderBuffers();
   
   renderBackface();
-
-  pthread_mutex_lock( &mutex_volume_ );
   renderVolume();
-  pthread_mutex_unlock( &mutex_volume_ );
   
   disableRenderBuffers();
   
@@ -35,22 +37,19 @@ void VolumeRenderer::drawVolume( int w, int h) {
 void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
   pthread_mutex_lock( &mutex_volume_ );
   
-  glBindTexture( GL_TEXTURE_3D, tex_volume_ );
-  glTexImage3D( GL_TEXTURE_3D,
-	       0,
-	       GL_RGBA,
-	       x,
-	       y,
-	       z,
-	       0,
-	       GL_RGBA,
-	       GL_UNSIGNED_BYTE,
-	       data);
+  memmove( pre_volume_, data, x * y * z * 4 );
+  is_volume_updated_ = true;
   
   pthread_mutex_unlock( &mutex_volume_ );
 }
 
 void VolumeRenderer::init(GLint w, GLint h) {
+
+  volume_tex_size_ = 256;
+  pre_volume_ = malloc( volume_tex_size_ * volume_tex_size_ * volume_tex_size_ * 4 );
+  memset( pre_volume_, 0, volume_tex_size_ * volume_tex_size_ * volume_tex_size_ * 4);
+  is_volume_updated_ = false;
+  
   glGenTextures(1, &tex_volume_);
   glBindTexture( GL_TEXTURE_3D, tex_volume_ );
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -59,7 +58,17 @@ void VolumeRenderer::init(GLint w, GLint h) {
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-  
+
+  glTexImage3D( GL_TEXTURE_3D,
+		0,
+		GL_RGBA,
+		volume_tex_size_,
+		volume_tex_size_,
+		volume_tex_size_,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pre_volume_);
 
   glGenFramebuffersEXT(1, &frame_buffer_);
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,frame_buffer_);
@@ -381,8 +390,47 @@ std::string VolumeRenderer::getShaderInfo( GLuint shader ) {
   return result;
 }
 
-VolumeRenderer::~VolumeRenderer() {
+void VolumeRenderer::updateVolumeImage() {
+  //pre_volume_;
+  //is_volume_updated_;
 
+  pthread_mutex_lock( &mutex_volume_ );
+  
+  if( is_volume_updated_ ) {
+    
+    glBindTexture( GL_TEXTURE_3D, tex_volume_ );
+
+      glTexImage3D( GL_TEXTURE_3D,
+		0,
+		GL_RGBA,
+		volume_tex_size_,
+		volume_tex_size_,
+		volume_tex_size_,
+		0,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		pre_volume_);
+      /*
+    glTexSubImage3D( GL_TEXTURE_3D,
+		     0,
+		     0,
+		     0,
+		     0,
+		     volume_tex_size_,
+		     volume_tex_size_,
+		     volume_tex_size_,
+		     GL_RGBA,
+		     GL_UNSIGNED_BYTE,
+		     pre_volume_);
+      */
+  }
+  
+  is_volume_updated_ = false;
+  pthread_mutex_unlock( &mutex_volume_ );
+}
+
+VolumeRenderer::~VolumeRenderer() {
+  glDeleteTextures( 1, &tex_volume_ );
 }
 
 }

@@ -52,10 +52,10 @@ void Demo0::initialize () {
 	  a = 0;
 	}
 
-	if ( x > sizex() /2 && y > sizey() /2  ) {
+	if ( x > (sizex()/2) && y > (sizey()/2)  ) {
 	  a = 0;
 	}
-	
+
 	data_[ index + CH_RED ] = r;
 	data_[ index + CH_GREEN ] = g;
 	data_[ index + CH_BLUE ] = b;

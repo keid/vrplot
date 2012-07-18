@@ -40,6 +40,10 @@ private:
 
   pthread_mutex_t mutex_volume_;
 
+  int volume_tex_size_;
+  void *pre_volume_;
+  bool is_volume_updated_;
+
   void init(GLint w, GLint h);
   
   void drawVertex( float x, float y, float z );
@@ -57,6 +61,8 @@ private:
   void compileShader( GLuint shader, const std::string &path );
   void linkShaderProgram( GLuint shader_program );
   std::string getShaderInfo( GLuint shader );
+
+  void updateVolumeImage();
   
 };
 

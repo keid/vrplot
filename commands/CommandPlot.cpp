@@ -1,6 +1,7 @@
 #include "commands/CommandPlot.hpp"
 #include "Components.hpp"
 #include "volumeGenerator/SimpleVolumeGenerator.hpp"
+#include "volumeGenerator/Demo0.hpp"
 #include "VolumeRenderer.hpp"
 
 #include <stdexcept>
@@ -38,6 +39,7 @@ Components* components ) const {
   volumeGenerator::IVolumeGenerator *vg = components->getVolumeGenerator();
   if ( vg == NULL ) {
     vg = new volumeGenerator::SimpleVolumeGenerator( resolution, resolution, resolution );
+    //vg = new volumeGenerator::Demo0( resolution, resolution, resolution );
     components->setVolumeGenerator( vg, true );
   }
 
