@@ -10,6 +10,11 @@ namespace vrplot {
 Components::Components() 
   : renderer_(NULL), controller_(NULL), loader_(NULL), generator_(NULL)
 {
+  components->setRenderer( new vrplot::VolumeRenderer( window_w, window_h), true);
+  components->getRenderer()->loadShaderSource( "simple.vert", "simple.frag" );
+  
+  components->setFileLoader( new vrplot::FileLoader(), true);
+  components->setController( new vrplot::controller::Controller( this ), true);
 }
 
 VolumeRenderer* Components::getRenderer() {
