@@ -22,19 +22,52 @@
 
 #include "Components.hpp"
 
+/////////////
+
 vrplot::Components* components = NULL;
 
 static int window_w = 256;
 static int window_h = 256;
 
-static void resize( int w, int h );
+/////////////
 
-static void cleanup( void ) {
+static void init();
+static void display();
+static void resize( int w, int h );
+static void idle();
+static void mouse( int button, int state, int x, int y );
+static void motion( int x, int y );
+static void keyboard( unsigned char key, int x, int y );
+static void cleanup();
+
+int main(int argc, char *argv[])
+{
+
+  glutInit(&argc, argv);
+  glutInitWindowSize( window_w, window_h );
+  glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
+
+  glutCreateWindow( vrplot::PROG_NAME.c_str() );
+  
+  glutDisplayFunc(display);
+  glutReshapeFunc(resize);
+  glutIdleFunc(idle);
+  
+  glutMouseFunc(mouse);
+  glutMotionFunc(motion);
+  glutKeyboardFunc(keyboard);
+  
+  init();
+  glutMainLoop();
+  
+  return 0;
+}
+
+static void cleanup() {
   delete components;
 }
 
-static void init(void)
-{
+static void init() {
 
   glClearColor(0.0, 0.0, 0.0, 0.0);
   glEnable(GL_DEPTH_TEST);
@@ -75,17 +108,16 @@ static void resize(int w, int h)
   glMatrixMode(GL_PROJECTION);
   
   glLoadIdentity();
-  gluPerspective(60.0, (double)w / (double)h, 1.00, 100.0);
+  gluPerspective(45.0, (double)w / (double)h, 1.00, 100.0);
 }
 
-static void idle(void)
-{
+static void idle() {
   if ( components->getController() == NULL ) {
     exit( EXIT_FAILURE );
   } else if ( components->getController()->isFinished() ) {
     exit( EXIT_SUCCESS );
   } else {
-    glutPostRedisplay();
+    //glutPostRedisplay();
     usleep( 100000 );
   }
 }
@@ -113,6 +145,7 @@ static void mouse(int button, int state, int x, int y)
 static void motion(int x, int y)
 {
   trackballMotion(x, y);
+  glutPostRedisplay();
 }
 
 static void keyboard(unsigned char key, int x, int y)
@@ -125,27 +158,4 @@ static void keyboard(unsigned char key, int x, int y)
   default:
     break;
   }
-}
-
-int main(int argc, char *argv[])
-{
-
-  glutInit(&argc, argv);
-  glutInitWindowSize( window_w, window_h );
-  glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-
-  glutCreateWindow( vrplot::PROG_NAME.c_str() );
-  
-  glutDisplayFunc(display);
-  glutReshapeFunc(resize);
-  glutIdleFunc(idle);
-  glutMouseFunc(mouse);
-  glutMotionFunc(motion);
-  glutKeyboardFunc(keyboard);
-  
-  init();
-  
-  glutMainLoop();
-  
-  return 0;
 }

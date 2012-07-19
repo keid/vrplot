@@ -1,6 +1,6 @@
 TARGET = vrplot
 
-SRC=main.cpp trackball.cpp \
+SRC=vrplot.cpp trackball.cpp \
 VolumeRenderer.cpp \
 Controller.cpp \
 commands/CommandPlot.cpp \
