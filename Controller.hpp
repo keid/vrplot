@@ -24,6 +24,13 @@ public:
   void invoke();
   
   bool isFinished();
+
+  /*
+   * Execute command using command table.
+   */
+  bool execCommand( std::list< std::string > &cmd );
+
+  void postQuit();
   
   ~Controller();
   
@@ -36,6 +43,7 @@ private:
   HistEvent *ev_;
   
   bool is_finished_;
+  bool is_quit_;
   pthread_t thread_;
    
   std::map< std::string, command::ICommand* > command_table_;
@@ -43,11 +51,6 @@ private:
   Components *components_;
 
   void initialize();
-
-  /*
-   * Execute command using command table.
-   */
-  bool execCommand( std::list< std::string > &cmd );
   
   /*
    * Initialize the command table.

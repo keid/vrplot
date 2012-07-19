@@ -38,10 +38,13 @@ bool Controller::execCommand( std::list< std::string > &cmd ) {
 
   if ( cmd.size() == 0 ) return false;
 
+  bool status;
+
   const std::string command_name = cmd.front();
   cmd.pop_front();
 
   if( command_name == "exit" || command_name == "quit" ) {
+    postQuit();
     return true;
   }
 
@@ -50,16 +53,17 @@ bool Controller::execCommand( std::list< std::string > &cmd ) {
     const command::ICommand *command = (*it).second;
 
     double ts = getTime();
-    bool status = command->execute( cmd, components_ );
+    status = command->execute( cmd, components_ );
     double te = getTime();
     printf("Elapsed time: %lf\n", te - ts);
     printf("Status: %s\n", status ? "SUCCESSFUL" : "FAILED");
     
   } else {
+    status = false;
     printf("Unknown command: %s\n", command_name.c_str());
   }
 
-  return false;
+  return status;
 }
 
 void Controller::invoke() {
@@ -88,6 +92,7 @@ const char * Controller::prompt(EditLine *el)
 
 void Controller::initialize() {
   is_finished_ = false;
+  is_quit_ = false;
   
   hist_ = history_init();
   ev_ = new HistEvent();
@@ -141,13 +146,21 @@ void Controller::pollCommand() {
       cmd.push_back( std::string( av[i] ) );
     }
 
-    if ( execCommand( cmd ) ) break;
+    if ( execCommand( cmd ) ) {
+      // TODO: add error to log file
+    }
+    
+    if ( is_quit_ ) break;
     
     tok_reset(tok_);
     cmd.clear();
   }
 
   is_finished_ = true;
+}
+
+void Controller::postQuit() {
+  is_quit_ = true;
 }
 
 double Controller::getTime() {
