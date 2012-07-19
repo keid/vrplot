@@ -7,31 +7,28 @@
 
 namespace vrplot {
 
-VolumeRenderer::VolumeRenderer( int w, int h) {
-  init(w, h);
+VolumeRenderer::VolumeRenderer( ) {
+  init();
+  
   shader_program_ = glCreateProgram();
 
   pthread_mutex_init(&mutex_volume_,NULL);
-
 }
 
 void VolumeRenderer::drawVolume( int w, int h) {
+  // Check whether new volume data is passed
   updateVolumeImage();
+
+  // 
+  updateBufferSize( w, h );
   
   glUseProgram(0);
-  
-  //glutSolidCube(1.0); return;
-  
   enableRenderBuffers();
-  
   renderBackface();
   renderVolume();
-  
   disableRenderBuffers();
   
-  // TODO : pass windows size
   renderBufferToScreen( final_image_buffer_, w, h );
-  //renderBufferToScreen( backface_buffer_, w, h );
 }
 
 void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
@@ -43,9 +40,12 @@ void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
   pthread_mutex_unlock( &mutex_volume_ );
 }
 
-void VolumeRenderer::init(GLint w, GLint h) {
+void VolumeRenderer::init() {
+  
+  width_ = height_ = 256;
 
   volume_tex_size_ = 256;
+  
   pre_volume_ = malloc( volume_tex_size_ * volume_tex_size_ * volume_tex_size_ * 4 );
   memset( pre_volume_, 0, volume_tex_size_ * volume_tex_size_ * volume_tex_size_ * 4);
   is_volume_updated_ = false;
@@ -70,36 +70,7 @@ void VolumeRenderer::init(GLint w, GLint h) {
 		GL_UNSIGNED_BYTE,
 		pre_volume_);
 
-  glGenFramebuffersEXT(1, &frame_buffer_);
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,frame_buffer_);
-
-  
-  glGenTextures(1, &backface_buffer_);
-  glBindTexture(GL_TEXTURE_2D, backface_buffer_);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, backface_buffer_, 0);
-
-  glGenTextures(1, &final_image_buffer_);
-  glBindTexture(GL_TEXTURE_2D, final_image_buffer_);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, w, h, 0, GL_RGBA, GL_FLOAT, NULL);
-
-  glGenRenderbuffersEXT(1, &render_buffer_);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffer_);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, w, h);
-  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, render_buffer_);
-  
-  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-
+  allocateBuffers( width_, height_ );
 }
 
 void VolumeRenderer::drawVertex( float x, float y, float z ) {
@@ -110,74 +81,99 @@ void VolumeRenderer::drawVertex( float x, float y, float z ) {
 
 // this method is used to draw the front and backside of the volume
 void VolumeRenderer::drawQuads( float x, float y, float z ) {
-  glBegin(GL_QUADS);
-  /* Back side */
-  glNormal3f(0.0, 0.0, -1.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(0.0, y, 0.0);
-  drawVertex(x, y, 0.0);
-  drawVertex(x, 0.0, 0.0);
+  
+  static bool is_initialized = false;
+  static GLuint display_list;
 
-  /* Front side */
-  glNormal3f(0.0, 0.0, 1.0);
-  drawVertex(0.0, 0.0, z);
-  drawVertex(x, 0.0, z);
-  drawVertex(x, y, z);
-  drawVertex(0.0, y, z);
+  if ( !is_initialized ) {
+    is_initialized = true;
+    display_list = glGenLists(1);
+    glNewList( display_list, GL_COMPILE );
+    glBegin(GL_QUADS);
+    /* Back side */
+    glNormal3f(0.0, 0.0, -1.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(0.0, y, 0.0);
+    drawVertex(x, y, 0.0);
+    drawVertex(x, 0.0, 0.0);
 
-  /* Top side */
-  glNormal3f(0.0, 1.0, 0.0);
-  drawVertex(0.0, y, 0.0);
-  drawVertex(0.0, y, z);
-  drawVertex(x, y, z);
-  drawVertex(x, y, 0.0);
+    /* Front side */
+    glNormal3f(0.0, 0.0, 1.0);
+    drawVertex(0.0, 0.0, z);
+    drawVertex(x, 0.0, z);
+    drawVertex(x, y, z);
+    drawVertex(0.0, y, z);
 
-  /* Bottom side */
-  glNormal3f(0.0, -1.0, 0.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(x, 0.0, 0.0);
-  drawVertex(x, 0.0, z);
-  drawVertex(0.0, 0.0, z);
+    /* Top side */
+    glNormal3f(0.0, 1.0, 0.0);
+    drawVertex(0.0, y, 0.0);
+    drawVertex(0.0, y, z);
+    drawVertex(x, y, z);
+    drawVertex(x, y, 0.0);
 
-  /* Left side */
-  glNormal3f(-1.0, 0.0, 0.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(0.0, 0.0, z);
-  drawVertex(0.0, y, z);
-  drawVertex(0.0, y, 0.0);
+    /* Bottom side */
+    glNormal3f(0.0, -1.0, 0.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(x, 0.0, 0.0);
+    drawVertex(x, 0.0, z);
+    drawVertex(0.0, 0.0, z);
 
-  /* Right side */
-  glNormal3f(1.0, 0.0, 0.0);
-  drawVertex(x, 0.0, 0.0);
-  drawVertex(x, y, 0.0);
-  drawVertex(x, y, z);
-  drawVertex(x, 0.0, z);
-  glEnd();
+    /* Left side */
+    glNormal3f(-1.0, 0.0, 0.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(0.0, 0.0, z);
+    drawVertex(0.0, y, z);
+    drawVertex(0.0, y, 0.0);
+
+    /* Right side */
+    glNormal3f(1.0, 0.0, 0.0);
+    drawVertex(x, 0.0, 0.0);
+    drawVertex(x, y, 0.0);
+    drawVertex(x, y, z);
+    drawVertex(x, 0.0, z);
+    glEnd();
+    glEndList();
+  }
+
+  glCallList( display_list );
 }
 
 void VolumeRenderer::renderFullscreenQuad() {
-  glDisable(GL_DEPTH_TEST);
-  glBegin(GL_QUADS);
+  static bool is_initialized = false;
+  static GLuint display_list;
+
+  if ( !is_initialized ) {
+    is_initialized = true;
+    display_list = glGenLists(1);
+    glNewList(display_list, GL_COMPILE);
+    glBegin(GL_QUADS);
    
-  glTexCoord2f(0,0); 
-  glVertex2f(0,0);
+    glTexCoord2f(0,0); 
+    glVertex2f(0,0);
 
-  glTexCoord2f(1,0); 
-  glVertex2f(1,0);
+    glTexCoord2f(1,0); 
+    glVertex2f(1,0);
 
-  glTexCoord2f(1, 1); 
-  glVertex2f(1, 1);
+    glTexCoord2f(1, 1); 
+    glVertex2f(1, 1);
 
-  glTexCoord2f(0, 1); 
-  glVertex2f(0, 1);
+    glTexCoord2f(0, 1); 
+    glVertex2f(0, 1);
 
-  glEnd();
+    glEnd();
+
+    glEndList();
+  }
+  
+  glDisable(GL_DEPTH_TEST);
+  glCallList( display_list );
   glEnable(GL_DEPTH_TEST);
+
 }
 
 void VolumeRenderer::renderBufferToScreen( GLuint tex, GLint w, GLint h ) {
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+  glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
   
@@ -195,10 +191,10 @@ void VolumeRenderer::renderBufferToScreen( GLuint tex, GLint w, GLint h ) {
 
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-
+  
   glDisable(GL_TEXTURE_2D);
-
+    
+  glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   
 }
@@ -214,6 +210,7 @@ void VolumeRenderer::renderBackface() {
     );
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+  glUseProgram( 0 );
   glEnable(GL_CULL_FACE);
   glCullFace(GL_FRONT);
   drawQuads(1.0,1.0, 1.0);
@@ -222,9 +219,6 @@ void VolumeRenderer::renderBackface() {
 }
 
 void VolumeRenderer::renderVolume() {
-
-  // NOT completed
-  
   glFramebufferTexture2DEXT
     ( GL_FRAMEBUFFER_EXT,
       GL_COLOR_ATTACHMENT0_EXT,
@@ -234,16 +228,6 @@ void VolumeRenderer::renderVolume() {
     );
   
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-  
-  //cgGLEnableProfile(vertexProfile);
-  //cgGLEnableProfile(fragmentProfile);
-  //cgGLBindProgram(vertex_main);
-  //cgGLBindProgram(fragment_main);
-  //cgGLSetParameter1f( cgGetNamedParameter( fragment_main, "stepsize") , stepsize);
-  
-  //set_tex_param("tex",backface_buffer,fragment_main,param1);
-  //set_tex_param("volume_tex",volume_texture,fragment_main,param2);
-
   glUseProgram( shader_program_ );
   
   glUniform1i
@@ -281,7 +265,6 @@ void VolumeRenderer::renderVolume() {
 
 }
 
-
 void VolumeRenderer::enableRenderBuffers() {
   glBindFramebufferEXT (GL_FRAMEBUFFER_EXT, frame_buffer_);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffer_);
@@ -289,6 +272,7 @@ void VolumeRenderer::enableRenderBuffers() {
 
 void VolumeRenderer::disableRenderBuffers() {
   glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+  glBindRenderbufferEXT(GL_FRAMEBUFFER_EXT, 0);
 }
 
 void VolumeRenderer::loadShaderSource( const std::string &v_shader_path,
@@ -400,37 +384,88 @@ void VolumeRenderer::updateVolumeImage() {
     
     glBindTexture( GL_TEXTURE_3D, tex_volume_ );
 
-      glTexImage3D( GL_TEXTURE_3D,
-		0,
-		GL_RGBA,
-		volume_tex_size_,
-		volume_tex_size_,
-		volume_tex_size_,
-		0,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		pre_volume_);
-      /*
-    glTexSubImage3D( GL_TEXTURE_3D,
-		     0,
-		     0,
-		     0,
-		     0,
-		     volume_tex_size_,
-		     volume_tex_size_,
-		     volume_tex_size_,
-		     GL_RGBA,
-		     GL_UNSIGNED_BYTE,
-		     pre_volume_);
-      */
+    glTexImage3D( GL_TEXTURE_3D,
+		  0,
+		  GL_RGBA,
+		  volume_tex_size_,
+		  volume_tex_size_,
+		  volume_tex_size_,
+		  0,
+		  GL_RGBA,
+		  GL_UNSIGNED_BYTE,
+		  pre_volume_);
+    /*
+      glTexSubImage3D( GL_TEXTURE_3D,
+      0,
+      0,
+      0,
+      0,
+      volume_tex_size_,
+      volume_tex_size_,
+      volume_tex_size_,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      pre_volume_);
+    */
   }
   
   is_volume_updated_ = false;
   pthread_mutex_unlock( &mutex_volume_ );
 }
 
+void VolumeRenderer::updateBufferSize( GLint w, GLint h ) {
+  if ( (w == width_) && (h == height_ ) )return;
+
+  width_ = w;
+  height_ = h;
+  
+  glDeleteFramebuffers( 1, &frame_buffer_ );
+  glDeleteTextures( 1, &backface_buffer_ );
+  glDeleteTextures( 1, &final_image_buffer_ );
+  glDeleteRenderbuffers(1, &render_buffer_ );
+
+  allocateBuffers( width_, height_ );
+}
+
+void VolumeRenderer::allocateBuffers( GLint width, GLint height ) {
+
+  glGenFramebuffersEXT(1, &frame_buffer_);
+  glBindFramebufferEXT(GL_FRAMEBUFFER_EXT,frame_buffer_);
+  
+  // initializing frame buffer for backface 
+  glGenTextures(1, &backface_buffer_);
+  glBindTexture(GL_TEXTURE_2D, backface_buffer_);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+
+  // initializing frame buffer for final image
+  glGenTextures(1, &final_image_buffer_);
+  glBindTexture(GL_TEXTURE_2D, final_image_buffer_);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
+
+  glGenRenderbuffersEXT(1, &render_buffer_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffer_);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, width, height);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, render_buffer_);
+
+  disableRenderBuffers();
+}
+
 VolumeRenderer::~VolumeRenderer() {
   glDeleteTextures( 1, &tex_volume_ );
+  glDeleteFramebuffers( 1, &frame_buffer_ );
+  glDeleteTextures( 1, &backface_buffer_ );
+  glDeleteTextures( 1, &final_image_buffer_ );
+  glDeleteRenderbuffers(1, &render_buffer_ );
 }
 
 }

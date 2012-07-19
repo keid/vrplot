@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <iostream>
+#include <unistd.h>
 
 #if defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
@@ -19,17 +20,12 @@
 #include "Controller.hpp"
 #include "FileLoader.hpp"
 
-/*
-#include "SimpleVolumeGenerator.hpp"
-#include "volumeGenerator/Demo0.hpp"
-*/
-
 #include "Components.hpp"
 
 vrplot::Components* components = NULL;
 
-static int window_w = 640;
-static int window_h = 480;
+static int window_w = 256;
+static int window_h = 256;
 
 static void resize( int w, int h );
 
@@ -44,31 +40,15 @@ static void init(void)
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
-  components = new vrplot::Components();
-  
-  components->setRenderer( new vrplot::VolumeRenderer( window_w, window_h), true);
-  components->getRenderer()->loadShaderSource( "simple.vert", "simple.frag" );
-
-  components->setFileLoader( new vrplot::FileLoader(), true);
-  
-  components->setController( new vrplot::controller::Controller( components ), true);
-  
-  //volume_gen = new vrplot::volumeGenerator::SimpleVolumeGenerator( 256, 256, 256 );
-  //volume_gen = new vrplot::volumeGenerator::Demo0( 256, 256, 256 );
-  //volume_gen->generate( *file_loader, index );
-
-  //volume_renderer->loadVolumeData( 256, 256, 256, volume_gen->volume() );
-
   atexit( cleanup );
-
+  
+  components = new vrplot::Components();
   components->getController()->invoke();
 }
 
 static void display(void)
 {
 
-  resize( window_w, window_h );
-  
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   
@@ -85,11 +65,12 @@ static void display(void)
 
 static void resize(int w, int h)
 {
-  glutReshapeWindow( window_w, window_h );
+  window_w = w;
+  window_h = h;
+
+  trackballRegion(w, h);
   
-  trackballRegion(window_w, window_h);
-  
-  glViewport(0, 0, window_w, window_h);
+  glViewport(0, 0, w, h);
   
   glMatrixMode(GL_PROJECTION);
   
@@ -105,6 +86,7 @@ static void idle(void)
     exit( EXIT_SUCCESS );
   } else {
     glutPostRedisplay();
+    usleep( 100000 );
   }
 }
 

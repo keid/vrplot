@@ -4,6 +4,7 @@ SRC=main.cpp trackball.cpp \
 VolumeRenderer.cpp \
 Controller.cpp \
 commands/CommandPlot.cpp \
+commands/CommandReplot.cpp \
 FileLoader.cpp \
 Components.cpp \
 volumeGenerator/SimpleVolumeGenerator.cpp \

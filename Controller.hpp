@@ -72,8 +72,9 @@ private:
 
   void pollCommand();
 
+    double getTime();
+
   static void* launchThread(void *obj);
-  
 };
 
 }
