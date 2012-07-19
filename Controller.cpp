@@ -8,8 +8,12 @@
 #include <string>
 #include <utility>
 
+#include <sys/time.h>
+#include <time.h>
+
 #include "commands/ICommand.hpp"
 #include "commands/CommandPlot.hpp"
+#include "commands/CommandReplot.hpp"
 
 #include "Components.hpp"
 
@@ -22,6 +26,7 @@ const std::string Controller::PROMPT_MSG = PROG_NAME+"> ";
 void Controller::initializeCommand() {
   
   addCommand<command::CommandPlot>();
+  addCommand<command::CommandReplot>();
   
 }
 
@@ -43,7 +48,13 @@ bool Controller::execCommand( std::list< std::string > &cmd ) {
   std::map< std::string, command::ICommand*  >::const_iterator it;
   if ( ( it = command_table_.find( command_name ) ) != command_table_.end() ) {
     const command::ICommand *command = (*it).second;
-    command->execute( cmd, components_ );
+
+    double ts = getTime();
+    bool status = command->execute( cmd, components_ );
+    double te = getTime();
+    printf("Elapsed time: %lf\n", te - ts);
+    printf("Status: %s\n", status ? "SUCCESSFUL" : "FAILED");
+    
   } else {
     printf("Unknown command: %s\n", command_name.c_str());
   }
@@ -131,12 +142,19 @@ void Controller::pollCommand() {
     }
 
     if ( execCommand( cmd ) ) break;
-
+    
     tok_reset(tok_);
     cmd.clear();
   }
 
   is_finished_ = true;
+}
+
+double Controller::getTime() {
+  static struct timeval tv;
+  gettimeofday(&tv, NULL);
+  return tv.tv_sec
+    + static_cast<double>(tv.tv_usec) * 1e-6;
 }
 
 void* Controller::launchThread(void *obj) {
