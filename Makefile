@@ -1,4 +1,4 @@
-TARGET = volumerenderer
+TARGET = vrplot
 
 SRC=main.cpp trackball.cpp \
 VolumeRenderer.cpp Controller.cpp \
