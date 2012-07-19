@@ -81,74 +81,99 @@ void VolumeRenderer::drawVertex( float x, float y, float z ) {
 
 // this method is used to draw the front and backside of the volume
 void VolumeRenderer::drawQuads( float x, float y, float z ) {
-  glBegin(GL_QUADS);
-  /* Back side */
-  glNormal3f(0.0, 0.0, -1.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(0.0, y, 0.0);
-  drawVertex(x, y, 0.0);
-  drawVertex(x, 0.0, 0.0);
+  
+  static bool is_initialized = false;
+  static GLuint display_list;
 
-  /* Front side */
-  glNormal3f(0.0, 0.0, 1.0);
-  drawVertex(0.0, 0.0, z);
-  drawVertex(x, 0.0, z);
-  drawVertex(x, y, z);
-  drawVertex(0.0, y, z);
+  if ( !is_initialized ) {
+    is_initialized = true;
+    display_list = glGenLists(1);
+    glNewList( display_list, GL_COMPILE );
+    glBegin(GL_QUADS);
+    /* Back side */
+    glNormal3f(0.0, 0.0, -1.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(0.0, y, 0.0);
+    drawVertex(x, y, 0.0);
+    drawVertex(x, 0.0, 0.0);
 
-  /* Top side */
-  glNormal3f(0.0, 1.0, 0.0);
-  drawVertex(0.0, y, 0.0);
-  drawVertex(0.0, y, z);
-  drawVertex(x, y, z);
-  drawVertex(x, y, 0.0);
+    /* Front side */
+    glNormal3f(0.0, 0.0, 1.0);
+    drawVertex(0.0, 0.0, z);
+    drawVertex(x, 0.0, z);
+    drawVertex(x, y, z);
+    drawVertex(0.0, y, z);
 
-  /* Bottom side */
-  glNormal3f(0.0, -1.0, 0.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(x, 0.0, 0.0);
-  drawVertex(x, 0.0, z);
-  drawVertex(0.0, 0.0, z);
+    /* Top side */
+    glNormal3f(0.0, 1.0, 0.0);
+    drawVertex(0.0, y, 0.0);
+    drawVertex(0.0, y, z);
+    drawVertex(x, y, z);
+    drawVertex(x, y, 0.0);
 
-  /* Left side */
-  glNormal3f(-1.0, 0.0, 0.0);
-  drawVertex(0.0, 0.0, 0.0);
-  drawVertex(0.0, 0.0, z);
-  drawVertex(0.0, y, z);
-  drawVertex(0.0, y, 0.0);
+    /* Bottom side */
+    glNormal3f(0.0, -1.0, 0.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(x, 0.0, 0.0);
+    drawVertex(x, 0.0, z);
+    drawVertex(0.0, 0.0, z);
 
-  /* Right side */
-  glNormal3f(1.0, 0.0, 0.0);
-  drawVertex(x, 0.0, 0.0);
-  drawVertex(x, y, 0.0);
-  drawVertex(x, y, z);
-  drawVertex(x, 0.0, z);
-  glEnd();
+    /* Left side */
+    glNormal3f(-1.0, 0.0, 0.0);
+    drawVertex(0.0, 0.0, 0.0);
+    drawVertex(0.0, 0.0, z);
+    drawVertex(0.0, y, z);
+    drawVertex(0.0, y, 0.0);
+
+    /* Right side */
+    glNormal3f(1.0, 0.0, 0.0);
+    drawVertex(x, 0.0, 0.0);
+    drawVertex(x, y, 0.0);
+    drawVertex(x, y, z);
+    drawVertex(x, 0.0, z);
+    glEnd();
+    glEndList();
+  }
+
+  glCallList( display_list );
 }
 
 void VolumeRenderer::renderFullscreenQuad() {
-  glDisable(GL_DEPTH_TEST);
-  glBegin(GL_QUADS);
+  static bool is_initialized = false;
+  static GLuint display_list;
+
+  if ( !is_initialized ) {
+    is_initialized = true;
+    display_list = glGenLists(1);
+    glNewList(display_list, GL_COMPILE);
+    glBegin(GL_QUADS);
    
-  glTexCoord2f(0,0); 
-  glVertex2f(0,0);
+    glTexCoord2f(0,0); 
+    glVertex2f(0,0);
 
-  glTexCoord2f(1,0); 
-  glVertex2f(1,0);
+    glTexCoord2f(1,0); 
+    glVertex2f(1,0);
 
-  glTexCoord2f(1, 1); 
-  glVertex2f(1, 1);
+    glTexCoord2f(1, 1); 
+    glVertex2f(1, 1);
 
-  glTexCoord2f(0, 1); 
-  glVertex2f(0, 1);
+    glTexCoord2f(0, 1); 
+    glVertex2f(0, 1);
 
-  glEnd();
+    glEnd();
+
+    glEndList();
+  }
+  
+  glDisable(GL_DEPTH_TEST);
+  glCallList( display_list );
   glEnable(GL_DEPTH_TEST);
+
 }
 
 void VolumeRenderer::renderBufferToScreen( GLuint tex, GLint w, GLint h ) {
   glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+  glMatrixMode(GL_MODELVIEW);
   glPushMatrix();
   glLoadIdentity();
   
@@ -166,10 +191,10 @@ void VolumeRenderer::renderBufferToScreen( GLuint tex, GLint w, GLint h ) {
 
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
-  glMatrixMode(GL_MODELVIEW);
-
+  
   glDisable(GL_TEXTURE_2D);
-
+    
+  glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   
 }
@@ -359,29 +384,29 @@ void VolumeRenderer::updateVolumeImage() {
     
     glBindTexture( GL_TEXTURE_3D, tex_volume_ );
 
-      glTexImage3D( GL_TEXTURE_3D,
-		0,
-		GL_RGBA,
-		volume_tex_size_,
-		volume_tex_size_,
-		volume_tex_size_,
-		0,
-		GL_RGBA,
-		GL_UNSIGNED_BYTE,
-		pre_volume_);
-      /*
-    glTexSubImage3D( GL_TEXTURE_3D,
-		     0,
-		     0,
-		     0,
-		     0,
-		     volume_tex_size_,
-		     volume_tex_size_,
-		     volume_tex_size_,
-		     GL_RGBA,
-		     GL_UNSIGNED_BYTE,
-		     pre_volume_);
-      */
+    glTexImage3D( GL_TEXTURE_3D,
+		  0,
+		  GL_RGBA,
+		  volume_tex_size_,
+		  volume_tex_size_,
+		  volume_tex_size_,
+		  0,
+		  GL_RGBA,
+		  GL_UNSIGNED_BYTE,
+		  pre_volume_);
+    /*
+      glTexSubImage3D( GL_TEXTURE_3D,
+      0,
+      0,
+      0,
+      0,
+      volume_tex_size_,
+      volume_tex_size_,
+      volume_tex_size_,
+      GL_RGBA,
+      GL_UNSIGNED_BYTE,
+      pre_volume_);
+    */
   }
   
   is_volume_updated_ = false;

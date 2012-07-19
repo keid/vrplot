@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <iostream>
+#include <unistd.h>
 
 #if defined(__APPLE__) || defined(MACOSX)
 #  include <GLUT/glut.h>
@@ -39,10 +40,9 @@ static void init(void)
   glEnable(GL_DEPTH_TEST);
   glDisable(GL_CULL_FACE);
   
-  components = new vrplot::Components();
-
   atexit( cleanup );
-
+  
+  components = new vrplot::Components();
   components->getController()->invoke();
 }
 
@@ -86,6 +86,7 @@ static void idle(void)
     exit( EXIT_SUCCESS );
   } else {
     glutPostRedisplay();
+    usleep( 100000 );
   }
 }
 
