@@ -16,6 +16,8 @@ VolumeRenderer::VolumeRenderer( ) {
 }
 
 void VolumeRenderer::drawVolume( int w, int h) {
+  is_updated_ = false;
+  
   // Check whether new volume data is passed
   updateVolumeImage();
 
@@ -38,9 +40,21 @@ void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
   is_volume_updated_ = true;
   
   pthread_mutex_unlock( &mutex_volume_ );
+
+  postUpdate();
+}
+
+bool VolumeRenderer::isUpdated() const {
+  return is_updated_;
+}
+
+void VolumeRenderer::postUpdate() {
+  is_updated_ = true;
 }
 
 void VolumeRenderer::init() {
+
+  is_updated_ = true;
   
   width_ = height_ = 256;
 
@@ -375,8 +389,6 @@ std::string VolumeRenderer::getShaderInfo( GLuint shader ) {
 }
 
 void VolumeRenderer::updateVolumeImage() {
-  //pre_volume_;
-  //is_volume_updated_;
 
   pthread_mutex_lock( &mutex_volume_ );
   
@@ -411,6 +423,7 @@ void VolumeRenderer::updateVolumeImage() {
   
   is_volume_updated_ = false;
   pthread_mutex_unlock( &mutex_volume_ );
+
 }
 
 void VolumeRenderer::updateBufferSize( GLint w, GLint h ) {

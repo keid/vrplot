@@ -25,6 +25,12 @@ public:
 
   void drawVolume( int w, int h);
 
+  /**
+   * Return true if renderer needs to update display
+   */
+  bool isUpdated() const;
+  void postUpdate();
+
   ~VolumeRenderer();
 
 private:
@@ -45,6 +51,8 @@ private:
   int volume_tex_size_;
   void *pre_volume_;
   bool is_volume_updated_;
+
+  bool is_updated_;
 
   void init( );
   

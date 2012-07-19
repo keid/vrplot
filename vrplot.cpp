@@ -34,7 +34,7 @@ static int window_h = 256;
 static void init();
 static void display();
 static void resize( int w, int h );
-static void idle();
+static void idle(int value);
 static void mouse( int button, int state, int x, int y );
 static void motion( int x, int y );
 static void keyboard( unsigned char key, int x, int y );
@@ -46,18 +46,17 @@ int main(int argc, char *argv[])
   glutInit(&argc, argv);
   glutInitWindowSize( window_w, window_h );
   glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
-
   glutCreateWindow( vrplot::PROG_NAME.c_str() );
+  
+  init();
   
   glutDisplayFunc(display);
   glutReshapeFunc(resize);
-  glutIdleFunc(idle);
-  
   glutMouseFunc(mouse);
   glutMotionFunc(motion);
   glutKeyboardFunc(keyboard);
-  
-  init();
+  glutTimerFunc( 100, idle, 1);
+
   glutMainLoop();
   
   return 0;
@@ -111,15 +110,22 @@ static void resize(int w, int h)
   gluPerspective(45.0, (double)w / (double)h, 1.00, 100.0);
 }
 
-static void idle() {
-  if ( components->getController() == NULL ) {
+static void idle( int value ) {
+  if ( components == NULL ) {
+    usleep( 100000 );
+    return;
+  } else if ( components->getController() == NULL ) {
     exit( EXIT_FAILURE );
   } else if ( components->getController()->isFinished() ) {
     exit( EXIT_SUCCESS );
-  } else {
-    //glutPostRedisplay();
-    usleep( 100000 );
+  } else if ( components->getRenderer() != NULL ) {
+    if ( value == 1 ) {
+      glutPostRedisplay();
+    } else if ( components->getRenderer()->isUpdated() ) {
+      glutPostRedisplay();
+    }
   }
+  glutTimerFunc( 100, idle, 0 );
 }
 
 static void mouse(int button, int state, int x, int y)
