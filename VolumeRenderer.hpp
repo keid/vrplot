@@ -16,7 +16,7 @@ namespace vrplot {
 class VolumeRenderer {
 
 public:
-  VolumeRenderer( int w, int h);
+  VolumeRenderer();
 
   void loadShaderSource( const std::string &v_shader_path,
 			 const std::string &f_shader_path );
@@ -31,6 +31,8 @@ private:
 
   GLuint tex_volume_;
 
+  GLint width_;
+  GLint height_;
   GLuint render_buffer_;
   GLuint frame_buffer_;
   GLuint backface_buffer_;
@@ -44,7 +46,7 @@ private:
   void *pre_volume_;
   bool is_volume_updated_;
 
-  void init(GLint w, GLint h);
+  void init( );
   
   void drawVertex( float x, float y, float z );
   void drawQuads( float x, float y, float z );
@@ -63,6 +65,9 @@ private:
   std::string getShaderInfo( GLuint shader );
 
   void updateVolumeImage();
+
+  void allocateBuffers( GLint width, GLint height );
+  void updateBufferSize( GLint width, GLint height );
   
 };
 
