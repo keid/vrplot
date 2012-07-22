@@ -155,9 +155,11 @@ static void mouse(int button, int state, int x, int y)
   if ( glutGetModifiers() & GLUT_ACTIVE_SHIFT ) {
     switch (button) {
     case 3:
-    camera_angle += 0.5;break;
-  case 4:
-    camera_angle -= 0.5; break;
+      if ( camera_angle < 100 ) camera_angle += 0.5;
+      break;
+    case 4:
+      if ( camera_angle > 2 ) camera_angle -= 0.5;
+      break;
     }
     glutPostRedisplay();
     return;
@@ -199,6 +201,8 @@ static void motion(int x, int y)
 
 static void keyboard(unsigned char key, int x, int y)
 {
+  if ( components == NULL ) return;
+  
   switch (key) {
   case 'q':
   case 'Q':

@@ -79,6 +79,10 @@ bool Controller::isFinished() {
 }
 
 Controller::~Controller() {
+  if ( pthread_cancel( thread_ ) == 0 ) {
+    pthread_join( thread_, NULL );
+  }
+  
   el_end(el_);
   tok_end(tok_);
   history_end(hist_);

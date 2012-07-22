@@ -7,8 +7,12 @@ commands/CommandPlot.cpp \
 commands/CommandReplot.cpp \
 FileLoader.cpp \
 Components.cpp \
-volumeGenerator/SimpleVolumeGenerator.cpp \
-volumeGenerator/Demo0.cpp 
+FieldSelector.cpp \
+CoordinateAdjuster.cpp \
+VolumeData.cpp \
+volumeGenerator/SimpleVolumeGenerator.cpp
+
+#volumeGenerator/Demo0.cpp 
 
 OBJS=$(patsubst %.cpp,%.o,$(SRC))
 DEPENDS=$(patsubst %.cpp,%.d,$(SRC))

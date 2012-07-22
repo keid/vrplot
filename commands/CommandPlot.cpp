@@ -1,13 +1,16 @@
 #include "commands/CommandPlot.hpp"
-#include "Components.hpp"
-#include "volumeGenerator/SimpleVolumeGenerator.hpp"
-#include "volumeGenerator/Demo0.hpp"
-#include "VolumeRenderer.hpp"
 
 #include <stdexcept>
 #include <string>
 #include <iostream>
 #include <vector>
+
+#include "Components.hpp"
+#include "volumeGenerator/SimpleVolumeGenerator.hpp"
+#include "VolumeRenderer.hpp"
+#include "VolumeData.hpp"
+#include "FieldSelector.hpp"
+#include "CoordinateAdjuster.hpp"
 
 namespace vrplot{
 namespace controller {
@@ -44,18 +47,14 @@ Components* components ) const {
   }
 
   // TODO : 'using' option
-  std::vector<int> index;
-  index.push_back(0);
-  index.push_back(1);
-  index.push_back(2);
-  index.push_back(3);
-  index.push_back(4);
-  index.push_back(5);
-  index.push_back(6);
-  
-  vg->generate( *fl, index );
+  FieldSelector selector;
 
-  vr->loadVolumeData( resolution, resolution, resolution, vg->volume() );
+  // TODO : 'set range'
+  CoordinateAdjuster adjuster;
+  
+  vg->generate( *fl, selector, adjuster );
+
+  vr->loadVolumeData( resolution, resolution, resolution, vg->getVolume()->getVolume() );
 
   return true;
 }
