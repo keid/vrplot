@@ -31,6 +31,7 @@ void VolumeRenderer::drawVolume( int w, int h) {
   disableRenderBuffers();
   
   renderBufferToScreen( final_image_buffer_, w, h );
+  //renderBufferToScreen( backface_buffer_, w, h );
 }
 
 void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {

@@ -32,10 +32,13 @@ void SimpleVolumeGenerator::generate( const FileLoader &loader,
   index_coordinate.push_back( index.at(2) ); // z
   
   std::vector< int > index_color;
-  index_color.push_back( index.at( std::min(3, n_index-1) ) ); // red
-  index_color.push_back( index.at( std::min(4, n_index-1) ) ); // green
-  index_color.push_back( index.at( std::min(5, n_index-1) ) ); // blue
-  index_color.push_back( index.at( std::min(6, n_index-1) ) ); // alpha
+  //index_color.push_back( index.at( std::min(3, n_index-1) ) ); // red
+  //index_color.push_back( -1 ); // red
+  //index_color.push_back( index.at( std::min(4, n_index-1) ) ); // green
+  //index_color.push_back( -1 ); // green
+  //index_color.push_back( index.at( std::min(5, n_index-1) ) ); // blue
+  //index_color.push_back( index.at( std::min(6, n_index-1) ) ); // alpha
+  //index_color.push_back( -1 ); // alpha
   
   int n_unspecified
     = std::count_if( index_color.begin(), index_color.end(), std::bind2nd( std::less<int>(), 0 ));
@@ -57,23 +60,34 @@ void SimpleVolumeGenerator::generate( const FileLoader &loader,
   getRange( loader.getMinRange(), loader.getMaxRange(), index_coordinate,
 	    &coordinate_max, &coordinate_min );
 
-  double coordinate_offset = coordinate_min;
-  double coordinate_coeff = sizeMax() / ( coordinate_max - coordinate_min );
+  //double coordinate_offset = -coordinate_min;
+  double coordinate_offset = 400;
+  //double coordinate_offset = 266.56/4;
+  //double coordinate_offset = 266.56/2;
+  //double coordinate_coeff = sizeMax() / ( coordinate_max - coordinate_min );
+  double coordinate_coeff = 0.2;
+  //  double coordinate_coeff = 2.0;
+
+  std::cout << "offset : " << coordinate_min << std::endl;
+  std::cout << "coeff : " << coordinate_coeff << std::endl;
   
   if ( coordinate_coeff >= 1 ) {
     coordinate_coeff = 1;
   }
-
+  
   double color_min = DBL_MAX;
   double color_max = -DBL_MAX;
 
+  /*
   getRange( loader.getMinRange(), loader.getMaxRange(), index_color,
 	    &color_max, &color_min );
+  */
 
-  double color_offset = color_min;
+  double color_offset = -color_min;
   double color_coeff = 255 / ( color_max - color_min );
-
   ////////////////
+
+  std::memset( data_, 0, sizeByte() );
 
   for( FileLoader::DataContainerType::const_iterator it = loader.begin();
        it != loader.end();
@@ -92,6 +106,13 @@ void SimpleVolumeGenerator::generate( const FileLoader &loader,
 
     index = index_coordinate.at( 2 );
     z = coordinate_coeff * (data.at( index ) + coordinate_offset);
+
+    //setVolume( x, y, z, 30, 30, 60, 40 );
+    setVolume( x, y, z, 0, 0, 255,  255);
+
+    continue;
+
+    // 
     
     index = index_color.at( 0 );
     if ( index >= 0 && index < data.size() ) {
@@ -206,6 +227,14 @@ void SimpleVolumeGenerator::setVolume( double x, double y, double z,
   int ix = clip(static_cast<int>(x));
   int iy = clip(static_cast<int>(y));
   int iz = clip(static_cast<int>(z));
+
+  if ( ix >= sizex() ) return;
+  if ( iy >= sizey() ) return;
+  if ( iz >= sizez() ) return;
+
+  if ( ix < 0 ) return;
+  if ( iy < 0 ) return;
+  if ( iz < 0 ) return;
   
   int index = ix + sizex() * iy + sizex() * sizey() * iz;
 
