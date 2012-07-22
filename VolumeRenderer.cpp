@@ -27,11 +27,9 @@ void VolumeRenderer::drawVolume( int w, int h) {
   glUseProgram(0);
   enableRenderBuffers();
   renderBackface();
-  renderVolume();
   disableRenderBuffers();
-  
-  renderBufferToScreen( final_image_buffer_, w, h );
-  //renderBufferToScreen( backface_buffer_, w, h );
+  renderVolume();
+
 }
 
 void VolumeRenderer::loadVolumeData( int x, int y, int z, const void *data ) {
@@ -234,15 +232,7 @@ void VolumeRenderer::renderBackface() {
 }
 
 void VolumeRenderer::renderVolume() {
-  glFramebufferTexture2DEXT
-    ( GL_FRAMEBUFFER_EXT,
-      GL_COLOR_ATTACHMENT0_EXT,
-      GL_TEXTURE_2D,
-      final_image_buffer_, 
-      0
-    );
-  
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
   glUseProgram( shader_program_ );
   
   glUniform1i
@@ -435,7 +425,6 @@ void VolumeRenderer::updateBufferSize( GLint w, GLint h ) {
   
   glDeleteFramebuffers( 1, &frame_buffer_ );
   glDeleteTextures( 1, &backface_buffer_ );
-  glDeleteTextures( 1, &final_image_buffer_ );
   glDeleteRenderbuffers(1, &render_buffer_ );
 
   allocateBuffers( width_, height_ );
@@ -456,15 +445,6 @@ void VolumeRenderer::allocateBuffers( GLint width, GLint height ) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
   glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 
-  // initializing frame buffer for final image
-  glGenTextures(1, &final_image_buffer_);
-  glBindTexture(GL_TEXTURE_2D, final_image_buffer_);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGBA16F_ARB, width, height, 0, GL_RGBA, GL_FLOAT, NULL);
 
   glGenRenderbuffersEXT(1, &render_buffer_);
   glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffer_);
@@ -478,7 +458,6 @@ VolumeRenderer::~VolumeRenderer() {
   glDeleteTextures( 1, &tex_volume_ );
   glDeleteFramebuffers( 1, &frame_buffer_ );
   glDeleteTextures( 1, &backface_buffer_ );
-  glDeleteTextures( 1, &final_image_buffer_ );
   glDeleteRenderbuffers(1, &render_buffer_ );
 }
 
