@@ -7,12 +7,13 @@
 #include "CoordinateAdjuster.hpp"
 #include "Color.hpp"
 #include "ColorMap.hpp"
+#include "Parameters.hpp"
 
 namespace vrplot {
 
 Components::Components() 
   : renderer_(NULL), controller_(NULL), loader_(NULL), generator_(NULL),
-    adjuster_(NULL), colormap_(NULL)
+    adjuster_(NULL), colormap_(NULL), params_(NULL)
 {
   setRenderer( new vrplot::VolumeRenderer( ), true);
   getRenderer()->loadShaderSource( "simple.vert", "simple.frag" );
@@ -32,6 +33,8 @@ Components::Components()
   for ( int i=0; i<150; ++i ) {
     getColorMap()->setColor( i/150.0, Color( Color::MODE_HSV, i+210, 1.0, 1.0, 0.5 + i / 150) );
   }
+
+  params_ = new Parameters();
   
 }
 
@@ -107,6 +110,8 @@ Components::~Components() {
   delete loader_;
   delete generator_;
   delete adjuster_;
+  delete colormap_;
+  delete params_;
 }
 
 

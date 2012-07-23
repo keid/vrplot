@@ -1,6 +1,7 @@
 TARGET = vrplot
 
 SRC=vrplot.cpp \
+Parameters.cpp \
 VolumeRenderer.cpp \
 Controller.cpp \
 commands/CommandPlot.cpp \
