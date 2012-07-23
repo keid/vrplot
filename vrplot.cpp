@@ -12,8 +12,6 @@
 #  include <GL/glut.h>
 #endif
 
-#include "trackball.h"
-
 #include "config.hpp"
 
 #include "VolumeRenderer.hpp"
@@ -108,9 +106,6 @@ static void display(void)
   glRotated( camera_pitch, 1.0, 0.0, 0.0 );
   glTranslated(-0.5, -0.5, -0.5);
   
-  //glMultMatrixd(trackballRotation());
-  
-  
   components->getRenderer()->drawVolume( window_w, window_h );
   
   glutSwapBuffers();
@@ -121,8 +116,6 @@ static void resize(int w, int h)
   window_w = w;
   window_h = h;
 
-  trackballRegion(w, h);
-  
   glViewport(0, 0, w, h);
   
   glMatrixMode(GL_PROJECTION);
@@ -174,18 +167,6 @@ static void mouse(int button, int state, int x, int y)
     camera_yaw += 0.5;break;
   case 6:
       camera_yaw -= 0.5;break;
-  case GLUT_LEFT_BUTTON:
-    switch (state) {
-    case GLUT_DOWN:
-      trackballStart(x, y);
-      break;
-    case GLUT_UP:
-      trackballStop(x, y);
-      break;
-    default:
-      break;
-    }
-    break;
   default:
     break;
   }
@@ -195,7 +176,6 @@ static void mouse(int button, int state, int x, int y)
 
 static void motion(int x, int y)
 {
-  trackballMotion(x, y);
   glutPostRedisplay();
 }
 
