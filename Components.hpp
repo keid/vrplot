@@ -15,6 +15,9 @@ namespace volumeGenerator {
 class IVolumeGenerator;
 }
 
+class CoordinateAdjuster;
+class ColorMap;
+
 class Components {
 
 public:
@@ -32,6 +35,12 @@ public:
   volumeGenerator::IVolumeGenerator* getVolumeGenerator();
   void setVolumeGenerator( volumeGenerator::IVolumeGenerator* generator, bool is_delete );
 
+  CoordinateAdjuster* getCoordinateAdjuster();
+  void setCoordinateAdjuster( CoordinateAdjuster* adjuster, bool is_delete );
+
+  ColorMap* getColorMap();
+  void setColorMap( ColorMap* colormap, bool is_delete );
+
   ~Components();
   
 private:
@@ -39,6 +48,8 @@ private:
   controller::Controller* controller_;
   FileLoader* loader_;
   volumeGenerator::IVolumeGenerator* generator_;
+  CoordinateAdjuster* adjuster_;
+  ColorMap *colormap_;
 };
 
 }

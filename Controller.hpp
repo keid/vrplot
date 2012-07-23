@@ -72,10 +72,11 @@ private:
   }
   
   static const char *prompt(EditLine *el);
+  static unsigned char completePath(EditLine *el, int ch);
 
   void pollCommand();
 
-    double getTime();
+  double getTime();
 
   static void* launchThread(void *obj);
 };

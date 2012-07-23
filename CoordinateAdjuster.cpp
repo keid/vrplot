@@ -4,6 +4,9 @@
 
 namespace vrplot {
 
+CoordinateAdjuster::CoordinateAdjuster() : mask_(ALL) {
+}
+
 double CoordinateAdjuster::x( double in ) const {
   return cx_ * in + ox_;
 }
@@ -50,18 +53,22 @@ void CoordinateAdjuster::getRnageZ( double *max, double *min ) {
 }
 
 void CoordinateAdjuster::setX( double max, double min ) {
-  minx_ = min;
-  maxx_ = max;
+  if ( mask_ & MIN_X ) minx_ = min;
+  if ( mask_ & MAX_X ) maxx_ = max;
 }
 
 void CoordinateAdjuster::setY( double max, double min ) {
-  miny_ = min;
-  maxy_ = max;
+  if ( mask_ & MIN_Y ) miny_ = min;
+  if ( mask_ & MAX_Y ) maxy_ = max;
 }
 
 void CoordinateAdjuster::setZ( double max, double min ) {
-  minz_ = min;
-  maxz_ = max;
+  if ( mask_ & MIN_Z ) minz_ = min;
+  if ( mask_ & MAX_Z ) maxz_ = max;
+}
+
+void CoordinateAdjuster::setMask( unsigned int mask ) {
+  mask_ = mask;
 }
 
 }

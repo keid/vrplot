@@ -7,7 +7,8 @@
 #include <list>
 #include <string>
 #include <utility>
-
+#include <dirent.h>
+#include <cstring>
 #include <sys/time.h>
 #include <time.h>
 
@@ -94,6 +95,60 @@ const char * Controller::prompt(EditLine *el)
   return PROMPT_MSG.c_str();
 }
 
+unsigned char
+Controller::completePath(EditLine *el, int ch)
+{
+  DIR *dd;
+  struct dirent *dp;
+  const char* ptr;
+  const LineInfo *lf = el_line(el);
+  int len;
+  int res = CC_ERROR;
+
+  /*                                                                                                                                                 
+   * Find the last word                                                                                                                              
+   */
+  for (ptr = lf->cursor - 1;
+       !isspace((unsigned char)*ptr) && ptr > lf->buffer; ptr--)
+    continue;
+  len = lf->cursor - ++ptr;
+
+  std::string last_word = std::string( ptr, len );
+  
+  std::string::size_type pos = last_word.find_last_of('/');
+  std::string basename;
+  std::string dirname;
+
+  if ( pos == std::string::npos ) {
+    basename = last_word;
+    dirname = ".";
+  } else {
+    basename = last_word.substr( pos + 1 );
+    dirname = last_word.substr( 0, pos );
+  }
+
+  if ( basename == "." ) basename = std::string();
+
+  dd = opendir( dirname.c_str() );
+  ptr = basename.c_str();
+  len = basename.size();
+  
+  for (dp = readdir(dd); dp != NULL; dp = readdir(dd)) {
+    if (len > strlen(dp->d_name))
+      continue;
+    if (strncmp(dp->d_name, ptr, len) == 0) {
+      if (el_insertstr(el, &dp->d_name[len]) == -1)
+        res = CC_ERROR;
+      else
+        res = CC_REFRESH;
+      break;
+    }
+  }
+
+  closedir(dd);
+  return res;
+}
+
 void Controller::initialize() {
   is_finished_ = false;
   is_quit_ = false;
@@ -113,6 +168,12 @@ void Controller::initialize() {
 
   el_set(el_, EL_HIST, history, hist_);
 
+  /* Add a user-defined function        */
+  el_set(el_, EL_ADDFN, "ed-complete", "Complete argument", completePath);
+  
+  /* Bind tab to it             */
+  el_set(el_, EL_BIND, "^I", "ed-complete", NULL);
+  
   el_source(el_, NULL);
 
   initializeCommand();

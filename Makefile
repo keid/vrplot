@@ -5,6 +5,8 @@ VolumeRenderer.cpp \
 Controller.cpp \
 commands/CommandPlot.cpp \
 commands/CommandReplot.cpp \
+Color.cpp \
+ColorMap.cpp \
 FileLoader.cpp \
 Components.cpp \
 FieldSelector.cpp \

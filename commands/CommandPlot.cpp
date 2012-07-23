@@ -8,9 +8,9 @@
 #include "Components.hpp"
 #include "volumeGenerator/SimpleVolumeGenerator.hpp"
 #include "VolumeRenderer.hpp"
-#include "VolumeData.hpp"
 #include "FieldSelector.hpp"
 #include "CoordinateAdjuster.hpp"
+#include "Controller.hpp"
 
 namespace vrplot{
 namespace controller {
@@ -26,9 +26,6 @@ Components* components ) const {
   if ( args.size() < 1 ) return false;
 
   const std::string file_path = args.front();
-
-  VolumeRenderer *vr = components->getRenderer();
-  if ( vr == NULL ) return false;
   
   FileLoader* fl = components->getFileLoader();
   if ( fl == NULL ) components->setFileLoader( new FileLoader(), true );
@@ -42,21 +39,12 @@ Components* components ) const {
   volumeGenerator::IVolumeGenerator *vg = components->getVolumeGenerator();
   if ( vg == NULL ) {
     vg = new volumeGenerator::SimpleVolumeGenerator( resolution, resolution, resolution );
-    //vg = new volumeGenerator::Demo0( resolution, resolution, resolution );
     components->setVolumeGenerator( vg, true );
   }
 
-  // TODO : 'using' option
-  FieldSelector selector;
+  args.front() = "replot";
 
-  // TODO : 'set range'
-  CoordinateAdjuster adjuster;
-  
-  vg->generate( *fl, selector, adjuster );
-
-  vr->loadVolumeData( resolution, resolution, resolution, vg->getVolume()->getVolume() );
-
-  return true;
+  return components->getController()->execCommand( args );
 }
 
 std::string CommandPlot::getUsage() const {

@@ -16,7 +16,8 @@ public:
   
   void generate( const FileLoader &loader,
 		 const FieldSelector &selector,
-		 CoordinateAdjuster &adjuster
+		 CoordinateAdjuster &adjuster,
+		 const ColorMap &colormap
   );
   const VolumeData *getVolume() const;
   bool good() const;

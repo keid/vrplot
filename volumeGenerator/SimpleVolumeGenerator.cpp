@@ -11,6 +11,8 @@
 #include "VolumeData.hpp"
 #include "FieldSelector.hpp"
 #include "CoordinateAdjuster.hpp"
+#include "ColorMap.hpp"
+#include "Color.hpp"
 
 namespace vrplot {
 namespace volumeGenerator {
@@ -24,7 +26,8 @@ SimpleVolumeGenerator( unsigned int x, unsigned int y, unsigned int z )
 
 void SimpleVolumeGenerator::generate( const FileLoader &loader,
 				      const FieldSelector &selector,
-				      CoordinateAdjuster &adjuster
+				      CoordinateAdjuster &adjuster,
+				      const ColorMap &colormap
 ) {
   
   if( selector.getFieldNum() < 4 ) {
@@ -68,10 +71,13 @@ void SimpleVolumeGenerator::generate( const FileLoader &loader,
     const double y = adjuster.y(raw_y) * ( getVolume()->sizey() );
     const double z = adjuster.z(raw_z) * ( getVolume()->sizez() );
     
+    double r, g, b, a;
+    colormap.getColor( adjuster.x(raw_x), &r, &g, &b, &a );
+    
     setVolumeElement
       ( 
        x, y, z,
-       0, 0, 32,  32);
+       r * 255, g * 255, b * 255, a * 255);
   }
   
 }

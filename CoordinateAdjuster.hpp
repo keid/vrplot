@@ -6,6 +6,16 @@ namespace vrplot {
 class CoordinateAdjuster {
   
 public:
+  static const unsigned int MAX_X = 0x01;
+  static const unsigned int MIN_X = 0x02;
+  static const unsigned int MAX_Y = 0x04;
+  static const unsigned int MIN_Y = 0x08;
+  static const unsigned int MAX_Z = 0x10;
+  static const unsigned int MIN_Z = 0x20;
+  static const unsigned int ALL = 0x3f;
+
+  CoordinateAdjuster();
+
   double x( double in ) const;
   double y( double in ) const;
   double z( double in ) const;
@@ -18,7 +28,11 @@ public:
   void getRangeY( double *max, double *min );
   void getRnageZ( double *max, double *min );
 
+  void setMask( unsigned int mask );
+
 private:
+  unsigned int mask_;
+  
   // coeffients
   double cx_;
   double cy_;

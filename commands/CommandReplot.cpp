@@ -9,7 +9,9 @@
 #include "volumeGenerator/SimpleVolumeGenerator.hpp"
 #include "VolumeRenderer.hpp"
 #include "FieldSelector.hpp"
+#include "VolumeData.hpp"
 #include "CoordinateAdjuster.hpp"
+#include "ColorMap.hpp"
 
 namespace vrplot{
 namespace controller {
@@ -31,7 +33,6 @@ Components* components ) const {
   // TODO : 'resolution' setting(256)
   int resolution = 256;
 
-  // TODO : 'with' option
   volumeGenerator::IVolumeGenerator *vg = components->getVolumeGenerator();
   if ( vg == NULL ) return false;
 
@@ -39,10 +40,15 @@ Components* components ) const {
   FieldSelector selector;
 
   // TODO : 'set range'
-  CoordinateAdjuster adjuster;
+  //CoordinateAdjuster adjuster;
+  CoordinateAdjuster* adjuster = components->getCoordinateAdjuster();
+
+  ColorMap* colormap = components->getColorMap();
   
-  vg->generate( *fl, selector, adjuster );
-  vr->loadVolumeData( resolution, resolution, resolution, vg->getVolume() );
+  vg->generate( *fl, selector, *adjuster, *colormap);
+  vr->loadVolumeData( resolution, resolution, resolution, vg->getVolume()->getVolume() );
+
+  adjuster->setMask( 0 );
 
   return true;
 }
