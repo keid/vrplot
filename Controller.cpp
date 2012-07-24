@@ -15,8 +15,10 @@
 #include "commands/ICommand.hpp"
 #include "commands/CommandPlot.hpp"
 #include "commands/CommandReplot.hpp"
+#include "commands/CommandShow.hpp"
 
 #include "Components.hpp"
+#include "CommandList.hpp"
 
 namespace vrplot {
 namespace controller {
@@ -26,8 +28,9 @@ const std::string Controller::PROMPT_MSG = PROG_NAME+"> ";
 /* Add new commands in this function */
 void Controller::initializeCommand() {
   
-  addCommand<command::CommandPlot>();
-  addCommand<command::CommandReplot>();
+  com_list_->addCommand<command::CommandPlot>();
+  com_list_->addCommand<command::CommandReplot>();
+  com_list_->addCommand<command::CommandShow>();
   
 }
 
@@ -35,30 +38,22 @@ Controller::Controller( Components* components ) : components_(components){
   initialize();
 }
 
-bool Controller::execCommand( std::list< std::string > &cmd ) {
+bool Controller::execCommand( std::list< std::string > *cmd ) {
 
-  if ( cmd.size() == 0 ) return false;
+  if ( cmd->size() == 0 ) return false;
 
   bool status;
 
-  const std::string command_name = cmd.front();
-  cmd.pop_front();
+  const std::string command_name = cmd->front();
+  cmd->pop_front();
 
   if( command_name == "exit" || command_name == "quit" ) {
     postQuit();
     return true;
   }
 
-  std::map< std::string, command::ICommand*  >::const_iterator it;
-  if ( ( it = command_table_.find( command_name ) ) != command_table_.end() ) {
-    const command::ICommand *command = (*it).second;
-
-    double ts = getTime();
-    status = command->execute( cmd, components_ );
-    double te = getTime();
-    printf("Elapsed time: %lf\n", te - ts);
-    printf("Status: %s\n", status ? "SUCCESSFUL" : "FAILED");
-    
+  if ( com_list_->isRegisterd( command_name ) ) {
+    status = com_list_->execCommand( command_name, cmd, components_ );
   } else {
     status = false;
     printf("Unknown command: %s\n", command_name.c_str());
@@ -176,6 +171,7 @@ void Controller::initialize() {
   
   el_source(el_, NULL);
 
+  com_list_ = new command::CommandList();
   initializeCommand();
 }
 
@@ -211,7 +207,7 @@ void Controller::pollCommand() {
       cmd.push_back( std::string( av[i] ) );
     }
 
-    if ( execCommand( cmd ) ) {
+    if ( execCommand( &cmd ) ) {
       // TODO: add error to log file
     }
     

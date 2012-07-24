@@ -21,8 +21,9 @@ std::string CommandReplot::getName() const {
   return std::string("replot");
 }
 
-bool CommandReplot::execute( std::list< std::string>& args,
-Components* components ) const {
+bool CommandReplot::execute( int id,
+			     std::list< std::string>* args,
+			     Components* components ) const {
 
   VolumeRenderer *vr = components->getRenderer();
   if ( vr == NULL ) return false;

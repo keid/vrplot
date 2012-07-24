@@ -1,5 +1,7 @@
 #include "Components.hpp"
 
+#include <iostream>
+
 #include "VolumeRenderer.hpp"
 #include "Controller.hpp"
 #include "FileLoader.hpp"
@@ -33,9 +35,8 @@ Components::Components()
   for ( int i=0; i<150; ++i ) {
     getColorMap()->setColor( i/150.0, Color( Color::MODE_HSV, i+210, 1.0, 1.0, 0.5 + i / 150) );
   }
-
-  params_ = new Parameters();
   
+  params_ = new Parameters();
 }
 
 VolumeRenderer* Components::getRenderer() {
@@ -102,6 +103,10 @@ void Components::setColorMap( ColorMap* colormap, bool is_delete ) {
     if ( is_delete ) delete colormap_;
     colormap_ = colormap;
   }
+}
+
+Parameters* Components::getParameters() {
+  return params_;
 }
 
 Components::~Components() {

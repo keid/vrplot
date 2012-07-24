@@ -16,6 +16,10 @@ class Components;
 
 namespace controller {
 
+namespace command {
+class CommandList;
+}
+
 class Controller {
 public:
 
@@ -28,7 +32,7 @@ public:
   /*
    * Execute command using command table.
    */
-  bool execCommand( std::list< std::string > &cmd );
+  bool execCommand( std::list< std::string > *cmd );
 
   void postQuit();
   
@@ -46,7 +50,8 @@ private:
   bool is_quit_;
   pthread_t thread_;
    
-  std::map< std::string, command::ICommand* > command_table_;
+  //std::map< std::string, command::ICommand* > command_table_;
+  command::CommandList *com_list_;
 
   Components *components_;
 
@@ -56,20 +61,6 @@ private:
    * Initialize the command table.
    */
   void initializeCommand();
-  
-  template< typename Command_Type >
-  bool addCommand( ) {
-    command::ICommand *p;
-    
-    try {
-      p = new Command_Type();
-    } catch ( std::bad_alloc &ex ) {
-      return false;
-    }
-    
-    command_table_.insert( std::make_pair( p->getName(), p ) );
-    return true;
-  }
   
   static const char *prompt(EditLine *el);
   static unsigned char completePath(EditLine *el, int ch);

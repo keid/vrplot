@@ -4,8 +4,10 @@ SRC=vrplot.cpp \
 Parameters.cpp \
 VolumeRenderer.cpp \
 Controller.cpp \
+CommandList.cpp \
 commands/CommandPlot.cpp \
 commands/CommandReplot.cpp \
+commands/CommandShow.cpp \
 Color.cpp \
 ColorMap.cpp \
 FileLoader.cpp \

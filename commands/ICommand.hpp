@@ -23,7 +23,8 @@ public:
    * Execute a command using args. Return true if the command is
    * finished successfully, or return false if failed.
    */
-  virtual bool execute( std::list< std::string >& args,
+  virtual bool execute( int id, 
+			std::list< std::string >* args,
 			Components* components) const = 0;
   
   /*

@@ -1,5 +1,5 @@
-#ifndef VRPLOT_CONTROLLER_COMMAND_COMMANDREPLOT_HPP
-#define VRPLOT_CONTROLLER_COMMAND_COMMANDREPLOT_HPP
+#ifndef COMMANDSHOW_HPP
+#define COMMANDSHOW_HPP
 
 #include "ICommand.hpp"
 
@@ -7,7 +7,7 @@ namespace vrplot {
 namespace controller {
 namespace command {
 
-class CommandReplot : public ICommand {
+class CommandShow : public ICommand {
 public:
   std::string getName() const ;
   bool execute( int id,

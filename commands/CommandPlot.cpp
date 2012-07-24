@@ -20,12 +20,13 @@ std::string CommandPlot::getName() const {
   return std::string("plot");
 }
 
-bool CommandPlot::execute( std::list< std::string>& args,
-Components* components ) const {
+bool CommandPlot::execute( int id,
+			   std::list< std::string>* args,
+			   Components* components ) const {
 
-  if ( args.size() < 1 ) return false;
+  if ( args->size() < 1 ) return false;
 
-  const std::string file_path = args.front();
+  const std::string file_path = args->front();
   
   FileLoader* fl = components->getFileLoader();
   if ( fl == NULL ) components->setFileLoader( new FileLoader(), true );
@@ -42,7 +43,7 @@ Components* components ) const {
     components->setVolumeGenerator( vg, true );
   }
 
-  args.front() = "replot";
+  args->front() = "replot";
 
   return components->getController()->execCommand( args );
 }
