@@ -7,8 +7,11 @@ Controller.cpp \
 CommandList.cpp \
 commands/CommandPlot.cpp \
 commands/CommandReplot.cpp \
+commands/CommandSet.cpp \
+commands/CommandUnset.cpp \
 commands/CommandShow.cpp \
 commands/CommandParamsAutoscale.cpp \
+expr/ExprConstant.cpp \
 Color.cpp \
 ColorMap.cpp \
 FileLoader.cpp \

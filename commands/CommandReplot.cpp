@@ -12,6 +12,7 @@
 #include "VolumeData.hpp"
 #include "CoordinateAdjuster.hpp"
 #include "ColorMap.hpp"
+#include "Parameters.hpp"
 
 namespace vrplot{
 namespace controller {
@@ -31,6 +32,8 @@ bool CommandReplot::execute( int id,
   FileLoader* fl = components->getFileLoader();
   if ( fl == NULL ) return false;
 
+  Parameters* params = components->getParameters();
+
   // TODO : 'resolution' setting(256)
   int resolution = 256;
 
@@ -43,19 +46,43 @@ bool CommandReplot::execute( int id,
   // TODO : 'set range'
   //CoordinateAdjuster adjuster;
   CoordinateAdjuster* adjuster = components->getCoordinateAdjuster();
+  adjuster->setMask( getAutoscaleMask( params ) );
 
   ColorMap* colormap = components->getColorMap();
   
   vg->generate( *fl, selector, *adjuster, *colormap);
   vr->loadVolumeData( resolution, resolution, resolution, vg->getVolume()->getVolume() );
 
-  adjuster->setMask( 0 );
-
   return true;
 }
 
 std::string CommandReplot::getUsage() const {
   return std::string("Replot a volume using a file which is loaded at last time. Usage: replot");
+}
+
+unsigned int CommandReplot::getAutoscaleMask( const Parameters *params ) const  {
+  unsigned int flag = 0x00;
+
+  if ( params->getParam( Parameters::AUTOSCALE_X_MAX ) != 0 ) 
+    flag |= CoordinateAdjuster::MAX_X;
+
+  if ( params->getParam( Parameters::AUTOSCALE_X_MIN ) != 0 ) 
+    flag |= CoordinateAdjuster::MIN_X;
+
+  if ( params->getParam( Parameters::AUTOSCALE_Y_MAX ) != 0 ) 
+    flag |= CoordinateAdjuster::MAX_Y;
+
+  if ( params->getParam( Parameters::AUTOSCALE_Y_MIN ) != 0 ) 
+    flag |= CoordinateAdjuster::MIN_Y;
+
+  if ( params->getParam( Parameters::AUTOSCALE_Z_MAX ) != 0 ) 
+    flag |= CoordinateAdjuster::MAX_Z;
+
+  if ( params->getParam( Parameters::AUTOSCALE_Z_MIN ) != 0 ) 
+    flag |= CoordinateAdjuster::MIN_Z;
+
+  return flag;
+
 }
 
 }

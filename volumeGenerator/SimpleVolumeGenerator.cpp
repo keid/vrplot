@@ -73,11 +73,12 @@ void SimpleVolumeGenerator::generate( const FileLoader &loader,
     
     double r, g, b, a;
     colormap.getColor( adjuster.x(raw_x), &r, &g, &b, &a );
-    
+
     setVolumeElement
       ( 
        x, y, z,
-       r * 255, g * 255, b * 255, a * 255);
+       r * 255, g * 255, b * 255, a * 255
+      );
   }
   
 }

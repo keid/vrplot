@@ -48,6 +48,7 @@ void ColorMap::getColor( double v, double *r, double *g, double *b, double *a) c
     *g = c_min_.getG();
     *b = c_min_.getB();
     *a = c_min_.getAlpha();
+    return;
   }
   
   if (it_upper == color_map_.end() ) {
@@ -55,6 +56,7 @@ void ColorMap::getColor( double v, double *r, double *g, double *b, double *a) c
     *g = c_max_.getG();
     *b = c_max_.getB();
     *a = c_max_.getAlpha();
+    return;
   }
   
   double dist = (*it_upper).first - (*it_lower).first;

@@ -34,10 +34,23 @@ void Color::setRGB( double r, double g, double b ) {
   convertRGBtoHSV( r, g, b, &h_, &s_, &v_ );
 }
 
+void Color::setRGBA( double r, double g, double b, double a ) {
+  r_ = std::max( 0.0, std::min( R_MAX, r ) );
+  g_ = std::max( 0.0, std::min( G_MAX, g ) );
+  b_ = std::max( 0.0, std::min( B_MAX, b ) );
+  convertRGBtoHSV( r, g, b, &h_, &s_, &v_ );
+  setAlpha( a );
+}
+
 void Color::getRGB( double *r, double *g, double *b ) const {
   *r = r_;
   *g = g_;
   *b = b_;
+}
+
+void Color::getRGBA( double *r, double *g, double *b, double *a) const {
+  getRGB( r, g, b );
+  *a = getAlpha();
 }
 
 void Color::setR( double r ) {

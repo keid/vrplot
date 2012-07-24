@@ -24,6 +24,9 @@ public:
   void setRGB( double r, double g, double b );
   void getRGB( double *r, double *g, double *b ) const;
 
+  void setRGBA( double r, double g, double b, double a );
+  void getRGBA( double *r, double *g, double *b, double *a ) const;
+
   void setR( double r );
   void setG( double g );
   void setB( double b );

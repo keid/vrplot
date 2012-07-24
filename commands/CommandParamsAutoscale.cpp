@@ -38,10 +38,12 @@ bool CommandParamsAutoscale::execute( int id,
 	z = true;
       }
 
-      args->pop_front();
-
-      if ( !(x | y | z) ) x = y = z = true;
-
+      if ( !(x | y | z) ) {
+	x = y = z = true;
+      } else {
+	args->pop_front();
+      }
+      
       if ( args->size() == 0 ) {
 	min = max = true;
       }
@@ -55,6 +57,7 @@ bool CommandParamsAutoscale::execute( int id,
 	  std::cerr << "Invalid option is specified. Choose from {max|min}."
 		    << std::endl;
 	}
+	args->pop_front();
       }
     }
     

@@ -2,6 +2,8 @@
 
 #include "Components.hpp"
 
+#include <stdexcept>
+
 namespace vrplot {
 namespace controller {
 namespace command {
@@ -53,9 +55,15 @@ void CommandList::getCommandName( std::vector< std::string > *array ) {
 
 CommandList& CommandList::addCommand( ICommand *command, const std::string& name, int id ) {
   Command com;
+  std::pair< typename std::map< std::string, Command >::iterator, bool > result;
   com.command = command;
   com.id = id;
-  command_table_.insert( std::make_pair( name, com ) );
+  result = command_table_.insert( std::make_pair( name, com ) );
+
+  if ( result.second == false ) {
+    throw std::runtime_error("Command name conflictiong.");
+  }
+
   return *this;
 }
 

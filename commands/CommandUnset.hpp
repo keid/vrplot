@@ -1,29 +1,32 @@
-#ifndef VRPLOT_CONTROLLER_COMMAND_COMMANDREPLOT_HPP
-#define VRPLOT_CONTROLLER_COMMAND_COMMANDREPLOT_HPP
+#ifndef COMMANDUNSET_HPP
+#define COMMANDUNSET_HPP
 
 #include "ICommand.hpp"
 
 namespace vrplot {
-
-class Parameters;
-
 namespace controller {
 namespace command {
 
-class CommandReplot : public ICommand {
+class CommandList;
+
+class CommandUnset : public ICommand {
 public:
+  CommandUnset();
+  
   std::string getName() const ;
   bool execute( int id,
 		std::list< std::string >* args,
 		Components* components ) const;
   std::string getUsage() const ;
 
+  ~CommandUnset();
 private:
-  unsigned int getAutoscaleMask( const Parameters *params ) const ;
+  CommandList *list_;
 };
 
 }
 }
 }
+
 
 #endif

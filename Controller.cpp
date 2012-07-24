@@ -16,6 +16,8 @@
 #include "commands/CommandPlot.hpp"
 #include "commands/CommandReplot.hpp"
 #include "commands/CommandShow.hpp"
+#include "commands/CommandSet.hpp"
+#include "commands/CommandUnset.hpp"
 
 #include "Components.hpp"
 #include "CommandList.hpp"
@@ -31,6 +33,8 @@ void Controller::initializeCommand() {
   com_list_->addCommand<command::CommandPlot>();
   com_list_->addCommand<command::CommandReplot>();
   com_list_->addCommand<command::CommandShow>();
+  com_list_->addCommand<command::CommandSet>();
+  com_list_->addCommand<command::CommandUnset>();
   
 }
 

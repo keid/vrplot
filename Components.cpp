@@ -27,11 +27,6 @@ Components::Components()
   setCoordinateAdjuster( new CoordinateAdjuster(), true );
 
   setColorMap( new ColorMap(), true );
-  /*
-    getColorMap()->setColor( 0.0, Color( Color::MODE_HSV, 300.0, 1.0, 1.0, 1.0) );
-  getColorMap()->setColor( 0.5, Color( Color::MODE_HSV, 200.0, 1.0, 1.0, 1.0) );
-  getColorMap()->setColor( 1.0, Color( Color::MODE_HSV, 0.0, 1.0, 1.0, 1.0) );
-  */
   for ( int i=0; i<150; ++i ) {
     getColorMap()->setColor( i/150.0, Color( Color::MODE_HSV, i+210, 1.0, 1.0, 0.5 + i / 150) );
   }
