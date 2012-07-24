@@ -62,6 +62,21 @@ std::map< std::string, int> & Parameters::getParamTable() {
   return params_int_;
 }  
 
+template < >
+const std::map< std::string, std::string> & Parameters::getParamTable() const{
+  return params_str_;
+}
+
+template < >
+const std::map< std::string, double> & Parameters::getParamTable() const {
+  return params_double_;
+}
+
+template < >
+const std::map< std::string, int> & Parameters::getParamTable() const {
+  return params_int_;
+}  
+
 std::ostream& Parameters::output( std::ostream& ost ) {
   output( ost, getParamTable< int >() );
   output( ost, getParamTable< double >() );

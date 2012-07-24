@@ -8,6 +8,7 @@ CommandList.cpp \
 commands/CommandPlot.cpp \
 commands/CommandReplot.cpp \
 commands/CommandShow.cpp \
+commands/CommandParamsAutoscale.cpp \
 Color.cpp \
 ColorMap.cpp \
 FileLoader.cpp \

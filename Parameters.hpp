@@ -89,6 +89,9 @@ public:
   template < typename T >
   std::map< std::string, T>& getParamTable();
 
+  template < typename T >
+  const std::map< std::string, T>& getParamTable() const;
+
   std::ostream& output( std::ostream& ost );
   
 private:
