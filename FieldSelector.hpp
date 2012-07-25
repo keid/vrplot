@@ -18,7 +18,7 @@ public:
 
   EntryType getField( const DataType& data, int n ) const;
   int getFieldIndex( int n ) const;
-  unsigned int getFieldNum() const;
+  int getFieldNum() const;
 
   void setArg( const std::string& arg);
   

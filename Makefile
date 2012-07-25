@@ -34,6 +34,7 @@ test_SRC= tests/vrplotTest.cpp \
 tests/ExprGeneratorTest.cpp \
 tests/ExprConstantTest.cpp \
 tests/ParametersTest.cpp \
+tests/FieldSelectorTest.cpp \
 $(main_SRC)
 
 OBJS=$(patsubst %.cpp,%.o,$(SRC))

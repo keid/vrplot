@@ -13,7 +13,7 @@ FieldSelector::FieldSelector( const std::string& arg ) {
 
 FieldSelector::EntryType 
 FieldSelector::getField( const DataType& data, int n ) const {
-  if ( static_cast<int>(data.size()) <= n ) {
+  if ( static_cast<int>(data.size()) < n ) {
     return 0;
   } else {
     return data.at( getFieldIndex( n ) );
@@ -24,7 +24,7 @@ int FieldSelector::getFieldIndex( int n ) const {
   return n; 
 }
 
-unsigned int FieldSelector::getFieldNum() const {
+int FieldSelector::getFieldNum() const {
   return INT_MAX;
 }
 
