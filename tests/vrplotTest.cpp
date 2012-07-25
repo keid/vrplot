@@ -4,7 +4,7 @@
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 
-#include "ExprConstantTest.hpp"
+//#include "ExprConstantTest.hpp"
 
 int main() {
   CppUnit::Test *suite 
