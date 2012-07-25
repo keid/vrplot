@@ -15,7 +15,7 @@ class ExprConstantTest : public CppUnit::TestFixture {
   
 private:
   vrplot::expr::ExprConstant *expr;
-
+  
 public:
   void setUp();
   void tearDown();

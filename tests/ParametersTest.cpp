@@ -1,4 +1,5 @@
 #include "tests/ParametersTest.hpp"
+
 #include <cppunit/TestSuite.h>
 #include <cppunit/TestCaller.h>
 #include <cmath>
@@ -12,8 +13,8 @@ void ParametersTest::setUp() {}
 void ParametersTest::tearDown() {}
 
 void ParametersTest::testParamInt() {
-  vrplot::Parameters::ParameterInt pi0;
-  vrplot::Parameters::ParameterInt pi1;
+  vrplot::ParameterTable::ParameterInt pi0;
+  vrplot::ParameterTable::ParameterInt pi1;
 
   pi0 = std::string( "param0" );
   pi1 = std::string( "param1" );
@@ -34,8 +35,8 @@ void ParametersTest::testParamInt() {
 }
 
 void ParametersTest::testParamDouble() {
-  vrplot::Parameters::ParameterDouble pd0;
-  vrplot::Parameters::ParameterDouble pd1;
+  vrplot::ParameterTable::ParameterDouble pd0;
+  vrplot::ParameterTable::ParameterDouble pd1;
   
   pd0 = std::string( "param0" );
   pd1 = std::string( "param1" );
@@ -57,8 +58,8 @@ void ParametersTest::testParamDouble() {
 
 void ParametersTest::testParamString() {
   
-  vrplot::Parameters::ParameterString ps0;
-  vrplot::Parameters::ParameterString ps1;
+  vrplot::ParameterTable::ParameterString ps0;
+  vrplot::ParameterTable::ParameterString ps1;
   
   ps0 = std::string( "param0" );
   ps1 = std::string( "param1" );
@@ -78,9 +79,9 @@ void ParametersTest::testParamString() {
 }
 
 void ParametersTest::testParamComplex() {
-  vrplot::Parameters::ParameterInt param_i;
-  vrplot::Parameters::ParameterDouble param_d;
-  vrplot::Parameters::ParameterString param_s;
+  vrplot::ParameterTable::ParameterInt param_i;
+  vrplot::ParameterTable::ParameterDouble param_d;
+  vrplot::ParameterTable::ParameterString param_s;
 
   param_i = std::string("testParami");
   param_d = param_i;

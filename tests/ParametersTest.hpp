@@ -5,6 +5,7 @@
 #include <cppunit/TestCase.h>
 
 #include "Parameters.hpp"
+#include "ParameterTable.hpp"
 
 class ParametersTest : public CppUnit::TestFixture {
   
@@ -16,7 +17,7 @@ class ParametersTest : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 private:
-  vrplot::Parameters params_;
+  vrplot::ParameterTable params_;
   
 public:
   void setUp();

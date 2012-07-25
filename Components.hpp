@@ -18,7 +18,7 @@ class IVolumeGenerator;
 class CoordinateAdjuster;
 class ColorMap;
 
-class Parameters;
+class ParameterTable;
 
 class Components {
 
@@ -43,7 +43,7 @@ public:
   ColorMap* getColorMap();
   void setColorMap( ColorMap* colormap, bool is_delete );
 
-  Parameters* getParameters();
+  ParameterTable* getParameterTable();
   
   ~Components();
   
@@ -54,7 +54,7 @@ private:
   volumeGenerator::IVolumeGenerator* generator_;
   CoordinateAdjuster* adjuster_;
   ColorMap *colormap_;
-  Parameters *params_;
+  ParameterTable *params_;
 };
 
 }

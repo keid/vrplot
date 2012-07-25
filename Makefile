@@ -4,6 +4,7 @@ test_TARGET = test_vrplot
 target_SRC=vrplot.cpp
 
 main_SRC= \
+ParameterTable.cpp \
 Parameters.cpp \
 VolumeRenderer.cpp \
 Controller.cpp \
@@ -31,6 +32,7 @@ SRC=$(main_SRC) $(target_SRC)
 
 test_SRC= tests/vrplotTest.cpp \
 tests/ExprConstantTest.cpp \
+tests/ParametersTest.cpp \
 $(main_SRC)
 
 OBJS=$(patsubst %.cpp,%.o,$(SRC))

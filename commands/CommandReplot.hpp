@@ -5,7 +5,7 @@
 
 namespace vrplot {
 
-class Parameters;
+class ParameterTable;
 
 namespace controller {
 namespace command {
@@ -19,7 +19,7 @@ public:
   std::string getUsage() const ;
 
 private:
-  unsigned int getAutoscaleMask( const Parameters *params ) const ;
+  unsigned int getAutoscaleMask( const ParameterTable *params ) const ;
 };
 
 }

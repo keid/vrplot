@@ -10,6 +10,7 @@
 #include "Color.hpp"
 #include "ColorMap.hpp"
 #include "Parameters.hpp"
+#include "ParameterTable.hpp"
 
 namespace vrplot {
 
@@ -31,7 +32,9 @@ Components::Components()
     getColorMap()->setColor( i/150.0, Color( Color::MODE_HSV, i+210, 1.0, 1.0, 0.5 + i / 150) );
   }
   
-  params_ = new Parameters();
+  params_ = new ParameterTable();
+  Parameters::registerInitialParameters( params_ );
+  
 }
 
 VolumeRenderer* Components::getRenderer() {
@@ -100,7 +103,7 @@ void Components::setColorMap( ColorMap* colormap, bool is_delete ) {
   }
 }
 
-Parameters* Components::getParameters() {
+ParameterTable* Components::getParameterTable() {
   return params_;
 }
 

@@ -4,6 +4,7 @@
 
 #include "Components.hpp"
 #include "Parameters.hpp"
+#include "ParameterTable.hpp"
 
 namespace vrplot {
 namespace controller {
@@ -20,7 +21,7 @@ std::string CommandParamsAutoscale::getName() const {
 bool CommandParamsAutoscale::execute( int id,
 				      std::list< std::string >* args,
 				      Components* components ) const {
-  Parameters *params = components->getParameters();
+  ParameterTable *params = components->getParameterTable();
 
   bool x, y, z, min, max;
 

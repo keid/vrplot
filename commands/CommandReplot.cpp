@@ -13,6 +13,7 @@
 #include "CoordinateAdjuster.hpp"
 #include "ColorMap.hpp"
 #include "Parameters.hpp"
+#include "ParameterTable.hpp"
 
 namespace vrplot{
 namespace controller {
@@ -32,7 +33,7 @@ bool CommandReplot::execute( int id,
   FileLoader* fl = components->getFileLoader();
   if ( fl == NULL ) return false;
 
-  Parameters* params = components->getParameters();
+  ParameterTable* params = components->getParameterTable();
 
   // TODO : 'resolution' setting(256)
   int resolution = 256;
@@ -60,7 +61,7 @@ std::string CommandReplot::getUsage() const {
   return std::string("Replot a volume using a file which is loaded at last time. Usage: replot");
 }
 
-unsigned int CommandReplot::getAutoscaleMask( const Parameters *params ) const  {
+unsigned int CommandReplot::getAutoscaleMask( const ParameterTable *params ) const  {
   unsigned int flag = 0x00;
 
   if ( params->getParam( Parameters::AUTOSCALE_X_MAX ) != 0 ) 
