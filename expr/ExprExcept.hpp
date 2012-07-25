@@ -26,6 +26,12 @@ public:
     : invalid_argument( what_arg ) {}
 };
 
+class SyntaxError : public std::invalid_argument {
+public:
+  explicit SyntaxError( const std::string& what_arg )
+    : invalid_argument( what_arg ) {}
+};
+
 }
 }
 }

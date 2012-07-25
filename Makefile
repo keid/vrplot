@@ -31,6 +31,7 @@ volumeGenerator/SimpleVolumeGenerator.cpp
 SRC=$(main_SRC) $(target_SRC)
 
 test_SRC= tests/vrplotTest.cpp \
+tests/ExprGeneratorTest.cpp \
 tests/ExprConstantTest.cpp \
 tests/ParametersTest.cpp \
 $(main_SRC)
